@@ -6,13 +6,6 @@ local local_player = cloneref(game:GetService("Players").LocalPlayer)
 local market = cloneref(game:GetService("MarketplaceService"))
 local info = market:GetProductInfo(game.PlaceId)
 
-local blacklisted_executors = {
-    "Solara",
-    "Xeno",
-    "Nezur",
-    "JJSploit"
-}
-
 function check_supported()
     local success, result = pcall(function()
         return game:HttpGet(games.."/"..game.PlaceId..".lua")
@@ -27,13 +20,6 @@ if getthreadcontext() > 7 then
     print("Executor Supported")
 else
     local_player:Kick("Unsupported Executor Use A Diffirent Executor")
-end
-
-if identifyexecutor() then
-    local executor = identifyexecutor()
-    if table.find(blacklisted_executors, executor) then
-        local_player:Kick("Unsupported Executor Use A Diffirent Executor")
-    end
 end
 
 check_supported()
