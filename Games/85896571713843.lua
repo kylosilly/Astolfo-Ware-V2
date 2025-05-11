@@ -4,12 +4,6 @@ if not game:IsLoaded() then
     print("Loaded Game")
 end
 
-if getthreadcontext() > 7 then
-    print("Executor Supported")
-else
-    game:Shutdown()
-end
-
 local repo = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
 local library = loadstring(game:HttpGet(repo .. 'Gui%20Lib%20%5BLibrary%5D'))()
