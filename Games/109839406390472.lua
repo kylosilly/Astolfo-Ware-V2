@@ -58,8 +58,10 @@ user_input_service.JumpRequest:Connect(function()
     end
 end)
 
+local did = false
 local_player.OnTeleport:Connect(function()
-    if queue_teleport then
+    if queue_teleport and not did then
+        did = true
         queue_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/kylosilly/Astolfo-Ware-V2/refs/heads/main/Loader.lua'))()")
     end
 end)
@@ -142,9 +144,9 @@ game_group:AddToggle('auto_start', {
     end
 })
 
-game_group:AddToggle('auto_start', {
+game_group:AddToggle('auto_redo', {
     Text = 'Auto Redo Dungeon',
-    Default = auto_start,
+    Default = auto_redo,
     Tooltip = 'Automatically does dungeon again',
 
     Callback = function(Value)
@@ -171,6 +173,7 @@ game_group:AddToggle('goto_closest', {
             repeat
                 local mob = closest_mob()
                 if mob then
+                    task.wait(.1)
                     local velocity_connection = run_service.Heartbeat:Connect(function()
                         if local_player.Character and local_player.Character:FindFirstChild("HumanoidRootPart") then
                             local_player.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
