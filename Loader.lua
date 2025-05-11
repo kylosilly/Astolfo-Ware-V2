@@ -23,6 +23,12 @@ function check_supported()
     end
 end
 
+if getthreadcontext() > 7 then
+    print("Executor Supported")
+else
+    local_player:Kick("Unsupported Executor Use A Diffirent Executor")
+end
+
 if identifyexecutor() then
     local executor = identifyexecutor()
     if table.find(blacklisted_executors, executor) then
