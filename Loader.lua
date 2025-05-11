@@ -26,7 +26,7 @@ end
 if identifyexecutor() then
     local executor = identifyexecutor()
     if table.find(blacklisted_executors, executor) then
-        library:Notify("Unsupported Executor Use A Diffirent Executor")
+        local_player:Kick("Unsupported Executor Use A Diffirent Executor")
     end
 end
 
