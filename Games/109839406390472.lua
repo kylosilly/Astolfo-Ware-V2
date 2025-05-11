@@ -1,6 +1,7 @@
 if not game:IsLoaded() then
     print("Waiting for game to load...")
     game.Loaded:Wait()
+    task.wait(5)
     print("Loaded Game")
 end
 
@@ -27,6 +28,7 @@ local game_group = tabs.main:AddLeftGroupbox('Game Settings')
 local player_group = tabs.main:AddRightGroupbox('Player Settings')
 local menu_group = tabs['ui settings']:AddLeftGroupbox('Menu')
 
+local queue_teleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
 local replicated_storage = cloneref(game:GetService('ReplicatedStorage'))
 local user_input_service = cloneref(game:GetService('UserInputService'))
 local local_player = cloneref(game:GetService('Players').LocalPlayer)
@@ -40,6 +42,8 @@ local info = market:GetProductInfo(game.PlaceId)
 local enemies = workspace:FindFirstChild("Mobs")
 
 local goto_closest = false
+local auto_start = false
+local auto_redo = false
 local kill_aura = false
 local inf_jump = false
 local tp_walk = false
@@ -51,6 +55,12 @@ local stud_offset = 5
 user_input_service.JumpRequest:Connect(function()
     if inf_jump then
         local_player.Character.Humanoid:ChangeState("Jumping")
+    end
+end)
+
+local_player.OnTeleport:Connect(function()
+    if queue_teleport then
+        queue_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/kylosilly/Astolfo-Ware-V2/refs/heads/main/Loader.lua'))()")
     end
 end)
 
@@ -116,6 +126,40 @@ game_group:AddSlider('kill_aura_delay', {
 
 game_group:AddDivider()
 
+game_group:AddToggle('auto_start', {
+    Text = 'Auto Start Dungeon',
+    Default = auto_start,
+    Tooltip = 'Automatically starts dungeon',
+
+    Callback = function(Value)
+        auto_start = Value
+        if Value then
+            repeat
+            replicated_storage:WaitForChild("Systems"):WaitForChild("Dungeons"):WaitForChild("TriggerStartDungeon"):FireServer()
+            task.wait(1)
+            until not auto_start
+        end
+    end
+})
+
+game_group:AddToggle('auto_start', {
+    Text = 'Auto Redo Dungeon',
+    Default = auto_start,
+    Tooltip = 'Automatically does dungeon again',
+
+    Callback = function(Value)
+        auto_redo = Value
+        if Value then
+            repeat
+            replicated_storage:WaitForChild("Systems"):WaitForChild("Dungeons"):WaitForChild("SetExitChoice"):FireServer("GoAgain")
+            task.wait(1)
+            until not auto_redo
+        end
+    end
+})
+
+game_group:AddDivider()
+
 game_group:AddToggle('goto_closest', {
     Text = 'Tp To Closest Mob',
     Default = goto_closest,
@@ -133,7 +177,9 @@ game_group:AddToggle('goto_closest', {
                             local_player.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
                         end
                     end)
-                    local tween = tween_service:Create(local_player.Character:FindFirstChild("HumanoidRootPart"), TweenInfo.new(2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = CFrame.new(mob and mob:GetPivot().Position) + Vector3.new(0, stud_offset, 0)})
+                    local to = mob:GetPivot().Position
+                    local distance = (to - local_player.Character:FindFirstChild("HumanoidRootPart").Position).Magnitude
+                    local tween = tween_service:Create(local_player.Character:FindFirstChild("HumanoidRootPart"), TweenInfo.new(distance / 200, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = CFrame.new(mob and mob:GetPivot().Position) + Vector3.new(0, stud_offset, 0)})
                     tween:Play()
                     tween.Completed:Wait()
                     if velocity_connection then
@@ -217,6 +263,8 @@ end);
 
 menu_group:AddButton('Unload', function()
     goto_closest = false
+    auto_start = false
+    auto_redo = false
     kill_aura = false
     inf_jump = false
     tp_walk = false
