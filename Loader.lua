@@ -38,7 +38,7 @@ end
 
 if game.GameId == 7546582051 then
     loadstring(game:HttpGet("https://raw.githubusercontent.com/kylosilly/Astolfo-Ware-V2/refs/heads/main/Games/dungeon%20heroes.lua"))()
-    library:Notify("Sigma: "..info.Name)
+    library:Notify("Supported Game Loading: "..info.Name)
     return
 end
 
