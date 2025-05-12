@@ -36,7 +36,7 @@ if identifyexecutor() then
     end
 end
 
-if game.GameId == 7546582051 then
+if game.GameId == 7546582051 and not game.PlaceId == 94845773826960 then
     loadstring(game:HttpGet("https://raw.githubusercontent.com/kylosilly/Astolfo-Ware-V2/refs/heads/main/Games/dungeon%20heroes.lua"))()
     library:Notify("Supported Game Loading: "..info.Name)
     return
