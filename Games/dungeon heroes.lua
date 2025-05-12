@@ -41,7 +41,7 @@ local info = market:GetProductInfo(game.PlaceId)
 local enemies = workspace:FindFirstChild("Mobs")
 
 if not enemies then
-    repeat task.wait() until workspace:FindFirstChild("Mobs")
+    repeat task.wait() print("Waiting For Mobs") until workspace:FindFirstChild("Mobs")
     enemies = workspace.Mobs
 end
 
