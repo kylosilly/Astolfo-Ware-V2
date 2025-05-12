@@ -38,11 +38,11 @@ local workspace = cloneref(game:GetService('Workspace'))
 local stats = cloneref(game:GetService('Stats'))
 local info = market:GetProductInfo(game.PlaceId)
 
-local enemies = workspace:WaitForChild("Mobs")
+local enemies = workspace:FindFirstChild("Mobs")
 
 if not enemies then
     repeat task.wait() until workspace:FindFirstChild("Mobs")
-    enemies = workspace:WaitForChild("Mobs")
+    enemies = workspace.Mobs
 end
 
 local goto_closest = false
