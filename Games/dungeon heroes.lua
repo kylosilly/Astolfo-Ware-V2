@@ -40,7 +40,7 @@ local workspace = cloneref(game:GetService('Workspace'))
 local stats = cloneref(game:GetService('Stats'))
 local info = market:GetProductInfo(game.PlaceId)
 
-local enemies = workspace:FindFirstChild("Mobs")
+local enemies = workspace:WaitForChild("Mobs")
 
 local goto_closest = false
 local auto_start = false
