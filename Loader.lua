@@ -6,6 +6,13 @@ local local_player = cloneref(game:GetService("Players").LocalPlayer)
 local market = cloneref(game:GetService("MarketplaceService"))
 local info = market:GetProductInfo(game.PlaceId)
 
+local blacklisted_executors = {
+    "Solara",
+    "Xeno",
+    "Nezur",
+    "JJSploit"
+}
+
 function check_supported()
     local success, result = pcall(function()
         return game:HttpGet(games.."/"..game.PlaceId..".lua")
@@ -20,6 +27,19 @@ if getthreadcontext() > 7 then
     print("Executor Supported")
 else
     local_player:Kick("Unsupported Executor Use A Diffirent Executor")
+end
+
+if identifyexecutor() then
+    local executor = identifyexecutor()
+    if table.find(blacklisted_executors, executor) then
+        local_player:Kick("Unsupported Executor Use A Diffirent Executor")
+    end
+end
+
+if game.GameId == 7546582051 then
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/kylosilly/Astolfo-Ware-V2/refs/heads/main/Games/dungeon%20heroes.lua"))()
+    library:Notify("Sigma: "..info.Name)
+    return
 end
 
 check_supported()
