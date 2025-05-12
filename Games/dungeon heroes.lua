@@ -4,7 +4,7 @@ if not game:IsLoaded() then
     print("Loaded Game")
 end
 
-task.wait(5)
+task.wait(10)
 
 local repo = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
