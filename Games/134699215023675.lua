@@ -37,6 +37,7 @@ local stats = cloneref(game:GetService('Stats'))
 local info = market:GetProductInfo(game.PlaceId)
 
 local pickup_aura = false
+local always_gold = false
 local auto_sell = false
 local no_hold = false
 
@@ -113,13 +114,23 @@ game_group:AddToggle('auto_sell', {
                 if crate then
                     for _, v in next, crate:GetChildren() do
                         if v:IsA("Model") then
-                            replicated_storage:WaitForChild("Remotes"):WaitForChild("SellPlantFromCrate"):FireServer({IsGold = true, Name = v.Name, UID = v:GetAttribute("UID")})
+                            replicated_storage:WaitForChild("Remotes"):WaitForChild("SellPlantFromCrate"):FireServer({IsGold = always_gold, Name = v.Name, UID = v:GetAttribute("UID")})
                         end
                     end
                 end
                 task.wait(sell_delay)
             until not auto_sell
         end
+    end
+})
+
+game_group:AddToggle('always_gold', {
+    Text = 'Always Gold Sell',
+    Default = always_gold,
+    Tooltip = 'Always sells any fruit as gold',
+
+    Callback = function(Value)
+        always_gold = Value
     end
 })
 
