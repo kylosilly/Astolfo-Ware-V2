@@ -36,6 +36,8 @@ local workspace = cloneref(game:GetService('Workspace'))
 local stats = cloneref(game:GetService('Stats'))
 local info = market:GetProductInfo(game.PlaceId)
 
+local goto_nearest = false
+local remove_coins = false
 local pickup_aura = false
 local always_gold = false
 local auto_sell = false
@@ -51,6 +53,27 @@ proximity_prompt_service.PromptButtonHoldBegan:Connect(function(p)
     end
 end)
 
+workspace.ChildAdded:Connect(function(c)
+    if c.Name == "Coin" and remove_coins then
+        c:Destroy()
+    end
+end)
+
+function nearest_plant()
+    local plant = nil
+    local distance = math.huge
+    for _, v in next, workspace.Plants:GetChildren() do
+        if v:IsA("Model") and local_player.Character and local_player.Character:FindFirstChild("HumanoidRootPart") then
+            local dist = (v:GetPivot().Position - local_player.Character:GetPivot().Position).Magnitude
+            if dist < distance then
+                distance = dist
+                plant = v
+            end
+        end
+    end
+    return plant
+end
+
 game_group:AddDivider()
 
 game_group:AddToggle('pickup_aura', {
@@ -63,12 +86,31 @@ game_group:AddToggle('pickup_aura', {
         if Value then
             repeat
                 for _, v in next, workspace.Plants:GetChildren() do
-                    if v:IsA("Model") and local_player.Character and (v:GetPivot().Position - local_player.Character:GetPivot().Position).Magnitude < pickup_aura_range then
-                        fireproximityprompt(v.PrimaryPart.ProximityPrompt)
+                    if v:IsA("Model") and v.PrimaryPart and local_player.Character and (v:GetPivot().Position - local_player.Character:GetPivot().Position).Magnitude < pickup_aura_range then
+                        fireproximityprompt(v.PrimaryPart:FindFirstChildOfClass("ProximityPrompt"))
                     end
                 end
                 task.wait(pickup_aura_delay)
             until not pickup_aura
+        end
+    end
+})
+
+game_group:AddToggle('goto_nearest', {
+    Text = 'Tp To Nearest Plant',
+    Default = goto_nearest,
+    Tooltip = 'Teleports you to closest plant',
+
+    Callback = function(Value)
+        goto_nearest = Value
+        if Value then
+            repeat
+                local plant = nearest_plant()
+                if plant and local_player.Character and local_player.Character:FindFirstChild("HumanoidRootPart") then
+                    local_player.Character.HumanoidRootPart.CFrame = plant:GetPivot() + Vector3.new(0, 5, 0)
+                end
+                task.wait()
+            until not goto_nearest
         end
     end
 })
@@ -159,6 +201,25 @@ misc_group:AddToggle('no_hold', {
     end
 })
 
+misc_group:AddDivider()
+
+misc_group:AddToggle('remove_coins', {
+    Text = 'Destroy Coins',
+    Default = remove_coins,
+    Tooltip = 'Deletes coins to prevent lag',
+
+    Callback = function(Value)
+        remove_coins = Value
+        if Value then
+            for _, v in next, workspace:GetChildren() do
+                if v.Name == "Coin" then
+                    v:Destroy()
+                end
+            end
+        end
+    end
+})
+
 local FrameTimer = tick()
 local FrameCounter = 0;
 local FPS = 60;
@@ -179,6 +240,7 @@ local watermark_connection = run_service.RenderStepped:Connect(function()
 end);
 
 menu_group:AddButton('Unload', function()
+    goto_nearest = false
     pickup_aura = false
     auto_sell = false
     no_hold = false
