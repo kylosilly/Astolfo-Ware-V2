@@ -64,7 +64,7 @@ end)
 elevator_group:AddDivider()
 
 elevator_group:AddLabel("This is currently in testing and has been made as simple as possible. I will rewrite it as soon as possible!", true)
-elevator_group:AddLabel("Current Supported Floors: 12", true)
+elevator_group:AddLabel("Current Supported Floors: 13", true)
 
 elevator_group:AddDivider()
 
@@ -96,6 +96,27 @@ elevator_group:AddButton({
             firetouchinterest(local_player.Character.HumanoidRootPart, workspace.Splitsville_Wipeout.WinPart, 1)
             local_player.Character.HumanoidRootPart.CFrame = workspace.Splitsville_Wipeout.WinPart.CFrame
             library:Notify("Teleported To End!")
+        elseif workspace:FindFirstChild("WALL_OF") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.WALL_OF.Checkpoints.EndCheckpoint, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.WALL_OF.Checkpoints.EndCheckpoint, 1)
+            library:Notify("Teleported To End!")
+        elseif workspace:FindFirstChild("TeapotDodgeball") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.TeapotDodgeball.Build.Finish, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.TeapotDodgeball.Build.Finish, 1)
+            library:Notify("Teleported To Finish!")
+        elseif workspace:FindFirstChild("FindThePath") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.FindThePath.Build.End.win_zone, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.FindThePath.Build.End.win_zone, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.FindThePath.Build.End.win_zone.CFrame
+            library:Notify("Teleported To End!")
+        elseif workspace:FindFirstChild("StanelyRoom") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.StanelyRoom.Build.Generated.Ending.EndTouch, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.StanelyRoom.Build.Generated.Ending.EndTouch, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.StanelyRoom.Build.Generated.Ending.EndTouch.CFrame
+            library:Notify("Teleported To End!")
+        elseif workspace:FindFirstChild("Dance") then
+            local_player.Character.HumanoidRootPart.CFrame = workspace.Elevator.Floor.CFrame
+            library:Notify("Teleported To Safe Spot!")
         elseif workspace:FindFirstChild("ColorTheTiles") then
             for _, v in next, workspace.ColorTheTiles.Tiles:GetDescendants() do
                 if v:IsA("TouchTransmitter") then
@@ -104,10 +125,6 @@ elevator_group:AddButton({
                 end
             end
             library:Notify("Done Coloring Tiles!")
-        elseif workspace:FindFirstChild("WALL_OF") then
-            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.WALL_OF.Checkpoints.EndCheckpoint, 0)
-            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.WALL_OF.Checkpoints.EndCheckpoint, 1)
-            library:Notify("Teleported To End!")
         elseif workspace:FindFirstChild("Minefield") then
             for _, v in next, workspace.Minefield.Build.MinesFolder.Mines:GetDescendants() do
                 if v:IsA("TouchTransmitter") then
@@ -116,10 +133,6 @@ elevator_group:AddButton({
                 end
             end
             library:Notify("Exploded All Mines!")
-        elseif workspace:FindFirstChild("TeapotDodgeball") then
-            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.TeapotDodgeball.Build.Finish, 0)
-            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.TeapotDodgeball.Build.Finish, 1)
-            library:Notify("Teleported To Finish!")
         elseif workspace:FindFirstChild("FunnyMaze") then
             for _, v in next, workspace.FunnyMaze.Build.FinalNotes:GetDescendants() do
                 if v:IsA("ClickDetector") then
@@ -134,6 +147,13 @@ elevator_group:AddButton({
                 end
             end
             library:Notify("Activated All Generators!")
+        elseif workspace:FindFirstChild("UES") then
+            for _, v in next, workspace.UES.Build:GetDescendants() do
+                if v:IsA("ClickDetector") and not v.Parent:GetAttribute("InUse") then
+                    fireclickdetector(v)
+                end
+            end
+            library:Notify("Clicked All Boxes!")
         elseif workspace:FindFirstChild("FloodFillMine") then
             local billboard = Instance.new("BillboardGui", workspace.FloodFillMine.Build.Shield.Bubble)
             local text = Instance.new("TextLabel", billboard)
@@ -149,34 +169,12 @@ elevator_group:AddButton({
             text.BackgroundTransparency = 1
             text.TextStrokeTransparency = 0
             text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-        elseif workspace:FindFirstChild("THEROCK") then
-            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.THEROCK.WinPart, 0)
-            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.THEROCK.WinPart, 1)
-            local_player.Character.HumanoidRootPart.CFrame = workspace.THEROCK.WinPart.CFrame
-            library:Notify("Teleported To End!")
-        elseif workspace:FindFirstChild("UES") then
-            for _, v in next, workspace.UES.Build:GetDescendants() do
-                if v:IsA("ClickDetector") and not v.Parent:GetAttribute("InUse") then
-                    fireclickdetector(v)
-                end
-            end
-            library:Notify("Clicked All Boxes!")
-        elseif workspace:FindFirstChild("FindThePath") then
-            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.FindThePath.Build.End.win_zone, 0)
-            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.FindThePath.Build.End.win_zone, 1)
-            local_player.Character.HumanoidRootPart.CFrame = workspace.FindThePath.Build.End.win_zone.CFrame
-            library:Notify("Teleported To End!")
-        elseif workspace:FindFirstChild("StanelyRoom") then
-            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.StanelyRoom.Build.Generated.Ending.EndTouch, 0)
-            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.StanelyRoom.Build.Generated.Ending.EndTouch, 1)
-            local_player.Character.HumanoidRootPart.CFrame = workspace.StanelyRoom.Build.Generated.Ending.EndTouch.CFrame
-            library:Notify("Teleported To End!")
         else
-            library:Notify("Round Not Supported!")
+            library:Notify("Current Round Not Supported!")
         end
     end,
     DoubleClick = false,
-    Tooltip = 'Cheats current round in elevator'
+    Tooltip = 'Cheat current round'
 })
 
 elevator_group:AddButton({
