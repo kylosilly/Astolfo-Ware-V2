@@ -6,13 +6,6 @@ local local_player = cloneref(game:GetService("Players").LocalPlayer)
 local market = cloneref(game:GetService("MarketplaceService"))
 local info = market:GetProductInfo(game.PlaceId)
 
-local blacklisted_executors = {
-    "Solara",
-    "Xeno",
-    "Nezur",
-    "JJSploit"
-}
-
 function check_supported()
     local success, result = pcall(function()
         return game:HttpGet(games.."/"..game.PlaceId..".lua")
@@ -26,14 +19,7 @@ end
 if getthreadcontext() > 7 then
     print("Executor Supported")
 else
-    local_player:Kick("Unsupported Executor Use A Diffirent Executor")
-end
-
-if identifyexecutor() then
-    local executor = identifyexecutor()
-    if table.find(blacklisted_executors, executor) then
-        local_player:Kick("Unsupported Executor Use A Diffirent Executor")
-    end
+    local_player:Kick(identifyexecutor().." Is Not Supported You Are Not Banned This Is Just A Kick Message Because Your Executor Is Not Supported")
 end
 
 if game.GameId == 7546582051 and not game.PlaceId == 94845773826960 then
