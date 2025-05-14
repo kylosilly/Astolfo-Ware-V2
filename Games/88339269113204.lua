@@ -45,10 +45,10 @@ local hitbox_expander = false
 local collect_stars = false
 local show_hitbox = false
 local kill_aura = false
+local auto_farm = false
 local auto_eat = false
 local no_delay = false
 
-local kill_aura_max_distance = 18
 local star_collect_delay = 0
 
 local hitbox_x = 5
@@ -80,13 +80,12 @@ combat_group:AddToggle('kill_aura', {
                 local targets = {}
                 if local_player.Character and local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChild("HumanoidRootPart") and #players:GetPlayers() > 1 then
                     for _, v in next, players:GetPlayers() do
-                        if v ~= local_player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 and (v.Character:GetPivot().Position - local_player.Character:GetPivot().Position).Magnitude < kill_aura_max_distance then
+                        if v ~= local_player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 and (v.Character:GetPivot().Position - local_player.Character:GetPivot().Position).Magnitude < 20 then
                             table.insert(targets, v)
                         end
                     end
                     if #targets > 0 then
                         for _, v in next, targets do
-                            v.Character.HumanoidRootPart.CFrame = local_player.Character.HumanoidRootPart.CFrame + local_player.Character.HumanoidRootPart.CFrame.lookVector * 4
                             replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("SkewerHit"):FireServer(v)
                             
                             if local_player.Character:FindFirstChildOfClass("Tool"):FindFirstChild("Bodies") and #local_player.Character:FindFirstChildOfClass("Tool").Bodies:GetChildren() > 3 then
@@ -101,16 +100,39 @@ combat_group:AddToggle('kill_aura', {
     end
 })
 
-combat_group:AddSlider('max_distance', {
-    Text = 'Kill Aura Range',
-    Default = kill_aura_max_distance,
-    Min = 7,
-    Max = 20,
-    Rounding = 0,
-    Compact = false,
+combat_group:AddToggle('auto_farm', {
+    Text = 'Auto Farm',
+    Default = auto_farm,
+    Tooltip = 'Farms kills, coins',
 
     Callback = function(Value)
-        kill_aura_max_distance = Value
+        auto_farm = Value
+        if Value then
+            local notified = false
+            local last_position = local_player.Character:GetPivot().Position
+            repeat
+                if kill_aura then
+                    library:Notify("This wont run when kill aura is on")
+                    notified = true
+                end
+
+                if not kill_aura then
+                    local player = players:GetPlayers()[math.random(1, #players:GetPlayers())]
+                    if player ~= local_player and local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                        local_player.Character:TranslateBy(player.Character:GetPivot().Position - local_player.Character:GetPivot().Position)
+                        task.wait(.15)
+                        replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("SkewerHit"):FireServer(player)
+                        
+                        if local_player.Character:FindFirstChildOfClass("Tool"):FindFirstChild("Bodies") and #local_player.Character:FindFirstChildOfClass("Tool").Bodies:GetChildren() > 3 then
+                            replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("EatSkewer"):FireServer()
+                        end
+                        task.wait()
+                    end
+                end
+                task.wait()
+            until not auto_farm
+            local_player.Character:TranslateBy(last_position - local_player.Character:GetPivot().Position)
+        end
     end
 })
 
@@ -279,6 +301,7 @@ menu_group:AddButton('Unload', function()
     collect_stars = false
     show_hitbox = false
     kill_aura = false
+    auto_farm = false
     auto_eat = false
     no_delay = false
     skewer_settings.Cooldown = 1.5
