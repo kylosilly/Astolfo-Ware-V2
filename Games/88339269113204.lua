@@ -149,19 +149,25 @@ combat_group:AddToggle('auto_farm', {
             local notified = false
             local last_position = local_player.Character:GetPivot().Position
             repeat
-                if kill_aura then
+                local tool = local_player.Character:FindFirstChildOfClass("Tool")
+
+                if kill_aura and not notified then
                     library:Notify("This wont run when kill aura is on")
                     notified = true
                 end
 
                 if not kill_aura then
+                    if not tool and local_player.Character and local_player.Backpack:FindFirstChildOfClass("Tool") then
+                        local_player.Character:FindFirstChild("Humanoid"):EquipTool(local_player.Backpack:FindFirstChildOfClass("Tool"))
+                    end
+
                     local player = players:GetPlayers()[math.random(1, #players:GetPlayers())]
-                    if player ~= local_player and local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                    if player ~= local_player and local_player.Character and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
                         local_player.Character:TranslateBy(player.Character:GetPivot().Position - local_player.Character:GetPivot().Position)
                         task.wait(.2)
                         replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("SkewerHit"):FireServer(player)
                         
-                        if local_player.Character:FindFirstChildOfClass("Tool"):FindFirstChild("Bodies") and #local_player.Character:FindFirstChildOfClass("Tool").Bodies:GetChildren() > 3 then
+                        if tool and tool:FindFirstChild("Bodies") and #tool.Bodies:GetChildren() > 3 then
                             replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("EatSkewer"):FireServer()
                         end
                         task.wait()
@@ -173,6 +179,7 @@ combat_group:AddToggle('auto_farm', {
         end
     end
 })
+
 
 combat_group:AddDivider()
 
