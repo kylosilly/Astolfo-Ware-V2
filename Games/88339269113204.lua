@@ -228,7 +228,7 @@ game_group:AddToggle('collect_stars', {
         collect_stars = Value
         if Value then
             repeat
-                if #active_stars:GetChildren() > 0 then
+                if local_player.Character and local_player.Character:FindFirstChild("HumanoidRootPart") and #active_stars:GetChildren() > 0 then
                     for _, v in next, active_stars:GetDescendants() do
                         if v:IsA("TouchTransmitter") then
                             firetouchinterest(local_player.Character.HumanoidRootPart, v.Parent, 0)
