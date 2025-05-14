@@ -25,9 +25,11 @@ local tabs = {
 
 local combat_group = tabs.main:AddLeftGroupbox('Combat Settings')
 local game_group = tabs.main:AddRightGroupbox('Game Settings')
+local player_group = tabs.main:AddRightGroupbox('Player Settings')
 local menu_group = tabs['ui settings']:AddLeftGroupbox('Menu')
 
 local replicated_storage = cloneref(game:GetService("ReplicatedStorage"))
+local user_input_service = cloneref(game:GetService("UserInputService"))
 local market = cloneref(game:GetService("MarketplaceService"))
 local run_service = cloneref(game:GetService("RunService"))
 local workspace = cloneref(game:GetService("Workspace"))
@@ -49,9 +51,12 @@ local kill_aura = false
 local auto_farm = false
 local auto_eat = false
 local no_delay = false
+local inf_jump = false
+local tp_walk = false
+local jumped = false
 
 local star_collect_delay = 0
-
+local tp_walk_speed = 5
 local hitbox_x = 5
 local hitbox_y = 5
 local hitbox_z = 5
@@ -63,6 +68,23 @@ workspace.ChildAdded:Connect(function(h)
 
     if h.Name == "Hitbox" and show_hitbox then
         h.Transparency = 0
+    end
+end)
+
+user_input_service.JumpRequest:Connect(function()
+    if inf_jump and not jumped then
+        jumped = true
+        local_player.Character.Humanoid:ChangeState("Jumping")
+        wait()
+        jumped = false
+    end
+end)
+
+local speed_connection = run_service.Heartbeat:Connect(function()
+    if tp_walk and local_player.Character and local_player.Character:FindFirstChild("Humanoid") and local_player.Character:FindFirstChild("HumanoidRootPart") then
+         if local_player.Character.Humanoid.MoveDirection.Magnitude > 0 then
+            local_player.Character:TranslateBy(local_player.Character.Humanoid.MoveDirection * tp_walk_speed / 10)
+        end
     end
 end)
 
@@ -293,6 +315,41 @@ game_group:AddSlider('collect_delay', {
     end
 })
 
+player_group:AddDivider()
+
+player_group:AddToggle('inf_jump', {
+    Text = 'Inf Jump',
+    Default = inf_jump,
+    Tooltip = 'Lets you jump forever',
+
+    Callback = function(Value)
+        inf_jump = Value
+    end
+})
+
+player_group:AddToggle('tp_walk', {
+    Text = 'Tp Walk',
+    Default = tp_walk,
+    Tooltip = 'Moves fast',
+
+    Callback = function(Value)
+        tp_walk = Value
+    end
+})
+
+player_group:AddSlider('tp_walk_speed', {
+    Text = 'Tp Walk Speed:',
+    Default = tp_walk_speed,
+    Min = 1,
+    Max = 10,
+    Rounding = 0,
+    Compact = false,
+
+    Callback = function(Value)
+        tp_walk_speed = Value
+    end
+})
+
 local FrameTimer = tick()
 local FrameCounter = 0;
 local FPS = 60;
@@ -321,8 +378,11 @@ menu_group:AddButton('Unload', function()
     auto_farm = false
     auto_eat = false
     no_delay = false
+    inf_jump = false
+    tp_walk = false
     skewer_settings.Cooldown = 1.5
     watermark_connection:Disconnect()
+    speed_connection:Disconnect()
     library:Unload()
 end)
 
