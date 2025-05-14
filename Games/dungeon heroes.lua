@@ -29,7 +29,6 @@ local game_group = tabs.main:AddLeftGroupbox('Game Settings')
 local player_group = tabs.main:AddRightGroupbox('Player Settings')
 local menu_group = tabs['ui settings']:AddLeftGroupbox('Menu')
 
-local queue_teleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
 local replicated_storage = cloneref(game:GetService('ReplicatedStorage'))
 local user_input_service = cloneref(game:GetService('UserInputService'))
 local local_player = cloneref(game:GetService('Players').LocalPlayer)
@@ -61,14 +60,6 @@ local stud_offset = 5
 user_input_service.JumpRequest:Connect(function()
     if inf_jump then
         local_player.Character.Humanoid:ChangeState("Jumping")
-    end
-end)
-
-local did = false
-local_player.OnTeleport:Connect(function()
-    if queue_teleport and not did then
-        did = true
-        queue_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/kylosilly/Astolfo-Ware-V2/refs/heads/main/Loader.lua'))()")
     end
 end)
 
