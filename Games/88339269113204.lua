@@ -118,7 +118,7 @@ combat_group:AddToggle('auto_farm', {
 
                 if not kill_aura then
                     local player = players:GetPlayers()[math.random(1, #players:GetPlayers())]
-                    if player ~= local_player and local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                    if player ~= local_player and local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
                         local_player.Character:TranslateBy(player.Character:GetPivot().Position - local_player.Character:GetPivot().Position)
                         task.wait(.15)
                         replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("SkewerHit"):FireServer(player)
