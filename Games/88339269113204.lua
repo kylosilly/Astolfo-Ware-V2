@@ -43,6 +43,7 @@ local active_stars = workspace:FindFirstChild("ActiveStars")
 
 local hitbox_expander = false
 local collect_stars = false
+local bring_closest = false
 local show_hitbox = false
 local kill_aura = false
 local auto_farm = false
@@ -67,7 +68,6 @@ end)
 
 combat_group:AddDivider()
 
---// I got not idea how to make the delay good and prevent people staying after its more far away ik why it stays but i cant fix it gg
 combat_group:AddToggle('kill_aura', {
     Text = 'Kill Aura',
     Default = kill_aura,
@@ -80,12 +80,16 @@ combat_group:AddToggle('kill_aura', {
                 local targets = {}
                 if local_player.Character and local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChild("HumanoidRootPart") and #players:GetPlayers() > 1 then
                     for _, v in next, players:GetPlayers() do
-                        if v ~= local_player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 and (v.Character:GetPivot().Position - local_player.Character:GetPivot().Position).Magnitude < 20 then
+                        if v ~= local_player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 and (v.Character:GetPivot().Position - local_player.Character:GetPivot().Position).Magnitude < 18 then
                             table.insert(targets, v)
                         end
                     end
                     if #targets > 0 then
                         for _, v in next, targets do
+                            if bring_closest then
+                                v.Character.HumanoidRootPart.CFrame = local_player.Character.HumanoidRootPart.CFrame + local_player.Character.HumanoidRootPart.CFrame.LookVector * 4
+                            end
+
                             replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("SkewerHit"):FireServer(v)
                             
                             if local_player.Character:FindFirstChildOfClass("Tool"):FindFirstChild("Bodies") and #local_player.Character:FindFirstChildOfClass("Tool").Bodies:GetChildren() > 3 then
@@ -99,6 +103,18 @@ combat_group:AddToggle('kill_aura', {
         end
     end
 })
+
+combat_group:AddToggle('bring_closest', {
+    Text = 'Bring Closest Targets',
+    Default = bring_closest,
+    Tooltip = 'Brings closest targets infront of you',
+
+    Callback = function(Value)
+        bring_closest = Value
+    end
+})
+
+combat_group:AddDivider()
 
 combat_group:AddToggle('auto_farm', {
     Text = 'Auto Farm',
@@ -120,7 +136,7 @@ combat_group:AddToggle('auto_farm', {
                     local player = players:GetPlayers()[math.random(1, #players:GetPlayers())]
                     if player ~= local_player and local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
                         local_player.Character:TranslateBy(player.Character:GetPivot().Position - local_player.Character:GetPivot().Position)
-                        task.wait(.15)
+                        task.wait(.2)
                         replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("SkewerHit"):FireServer(player)
                         
                         if local_player.Character:FindFirstChildOfClass("Tool"):FindFirstChild("Bodies") and #local_player.Character:FindFirstChildOfClass("Tool").Bodies:GetChildren() > 3 then
@@ -299,6 +315,7 @@ end);
 menu_group:AddButton('Unload', function()
     hitbox_expander = false
     collect_stars = false
+    bring_closest = false
     show_hitbox = false
     kill_aura = false
     auto_farm = false
