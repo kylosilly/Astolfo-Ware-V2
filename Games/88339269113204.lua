@@ -28,8 +28,10 @@ local game_group = tabs.main:AddRightGroupbox('Game Settings')
 local player_group = tabs.main:AddRightGroupbox('Player Settings')
 local menu_group = tabs['ui settings']:AddLeftGroupbox('Menu')
 
+local queue_teleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
 local replicated_storage = cloneref(game:GetService("ReplicatedStorage"))
 local user_input_service = cloneref(game:GetService("UserInputService"))
+local teleport_service = cloneref(game:GetService("TeleportService"))
 local market = cloneref(game:GetService("MarketplaceService"))
 local run_service = cloneref(game:GetService("RunService"))
 local workspace = cloneref(game:GetService("Workspace"))
@@ -44,6 +46,7 @@ local skewer_settings = require(replicated_storage.Shared.Dictionaries.SkewerSet
 local active_stars = workspace:FindFirstChild("ActiveStars")
 
 local hitbox_expander = false
+local anti_vote_kick = false
 local collect_stars = false
 local bring_closest = false
 local show_hitbox = false
@@ -322,6 +325,26 @@ game_group:AddSlider('collect_delay', {
     end
 })
 
+game_group:AddDivider()
+
+game_group:AddButton({
+    Text = 'Redeem Daily Rewards',
+    Func = function()
+        replicated_storage.Remotes.Client.ClaimDailyReward:FireServer()
+    end,
+    DoubleClick = false,
+    Tooltip = 'Claims daily reward'
+})
+
+game_group:AddButton({
+    Text = 'Redeem OG Rewards',
+    Func = function()
+        replicated_storage.Remotes.Client.ClaimOgBenefits:FireServer()
+    end,
+    DoubleClick = false,
+    Tooltip = 'Clims OG daily reward'
+})
+
 player_group:AddDivider()
 
 player_group:AddToggle('inf_jump', {
@@ -357,6 +380,31 @@ player_group:AddSlider('tp_walk_speed', {
     end
 })
 
+player_group:AddDivider()
+
+player_group:AddToggle('anti_vote_kick', {
+    Text = 'Anti Vote Kick',
+    Default = anti_vote_kick,
+    Tooltip = 'Prevents getting kicked from server',
+
+    Callback = function(Value)
+        anti_vote_kick = Value
+        if Value then
+            local done = false
+            repeat
+                if string.find(local_player.PlayerGui.Votekick.Frame.Title.Text, local_player.Name) then
+                    library:Notify("Detected Vote Kick For LocalPlayer Rejoining...")
+                    task.wait(2)
+                    done = true
+                    teleport_service:TeleportToPlaceInstance(game.PlaceId, game.JobId, local_player)
+                    queue_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/kylosilly/Astolfo-Ware-V2/refs/heads/main/Loader.lua'))()")
+                end
+                task.wait()
+            until not anti_vote_kick or done
+        end
+    end
+})
+
 local FrameTimer = tick()
 local FrameCounter = 0;
 local FPS = 60;
@@ -378,6 +426,7 @@ end);
 
 menu_group:AddButton('Unload', function()
     hitbox_expander = false
+    anti_vote_kick = false
     collect_stars = false
     bring_closest = false
     show_hitbox = false
