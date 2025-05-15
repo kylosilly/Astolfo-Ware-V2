@@ -50,6 +50,7 @@ local anti_vote_kick = false
 local collect_stars = false
 local bring_closest = false
 local show_hitbox = false
+local hold_check = false
 local kill_aura = false
 local auto_farm = false
 local auto_eat = false
@@ -165,7 +166,7 @@ combat_group:AddToggle('auto_farm', {
                     end
 
                     local player = players:GetPlayers()[math.random(1, #players:GetPlayers())]
-                    if player ~= local_player and local_player.Character and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                    if player ~= local_player and local_player.Character and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 and (hold_check and player.Character:FindFirstChildOfClass("Tool") or not hold_check) then
                         local_player.Character:TranslateBy(player.Character:GetPivot().Position - local_player.Character:GetPivot().Position)
                         task.wait(.2)
                         replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("SkewerHit"):FireServer(player)
@@ -183,6 +184,15 @@ combat_group:AddToggle('auto_farm', {
     end
 })
 
+combat_group:AddToggle('tool_check', {
+    Text = 'Tool Held Check',
+    Default = hold_check,
+    Tooltip = 'Only goes for people that are holding a tool',
+
+    Callback = function(Value)
+        hold_check = Value
+    end
+})
 
 combat_group:AddDivider()
 
