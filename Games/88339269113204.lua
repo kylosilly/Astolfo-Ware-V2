@@ -152,7 +152,7 @@ combat_group:AddToggle('auto_farm', {
             local last_position = local_player.Character:GetPivot().Position
             repeat
                 if not kill_aura then
-                    if local_player.Character and not local_player.Character:FindFirstChildOfClass("TooL") then
+                    if local_player.Character and not local_player.Character:FindFirstChildOfClass("TooL") and local_player.Backpack:FindFirstChildOfClass("Tool") then
                         local_player.Character:FindFirstChild("Humanoid"):EquipTool(local_player.Backpack:FindFirstChildOfClass("Tool"))
                     end
 
