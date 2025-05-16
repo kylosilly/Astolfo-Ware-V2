@@ -11,7 +11,7 @@ local theme_manager = loadstring(game:HttpGet(repo .. 'Gui%20Lib%20%5BThemeManag
 local save_manager = loadstring(game:HttpGet(repo .. 'Gui%20Lib%20%5BSaveManager%5D'))()
 
 local window = library:CreateWindow({
-    Title = 'Astolfo Ware | Made By @kylosilly | discord.gg/SUTpER4dNc',
+    Title = "Astolfo Ware | Made By @kylosilly | discord.gg/SUTpER4dNc",
     Center = true,
     AutoShow = true,
     TabPadding = 8,
@@ -19,60 +19,41 @@ local window = library:CreateWindow({
 })
 
 local tabs = {
-    main = window:AddTab('Main'),
-    ['ui settings'] = window:AddTab('UI Settings')
+    main = window:AddTab("Main"),
+    ["ui settings"] = window:AddTab("UI Settings")
 }
 
-local combat_group = tabs.main:AddLeftGroupbox('Combat Settings')
-local game_group = tabs.main:AddRightGroupbox('Game Settings')
-local player_group = tabs.main:AddRightGroupbox('Player Settings')
-local menu_group = tabs['ui settings']:AddLeftGroupbox('Menu')
+local elevator_group = tabs.main:AddLeftGroupbox("Elevator Settings")
+local game_group = tabs.main:AddRightGroupbox("Game Settings")
+local player_group = tabs.main:AddRightGroupbox("Player Settings")
+local menu_group = tabs["ui settings"]:AddLeftGroupbox("Menu")
 
-local replicated_storage = cloneref(game:GetService("ReplicatedStorage"))
-local user_input_service = cloneref(game:GetService("UserInputService"))
-local teleport_service = cloneref(game:GetService("TeleportService"))
-local market = cloneref(game:GetService("MarketplaceService"))
-local run_service = cloneref(game:GetService("RunService"))
-local workspace = cloneref(game:GetService("Workspace"))
-local players = cloneref(game:GetService("Players"))
-local stats = cloneref(game:GetService("Stats"))
+get_service = setmetatable({}, {
+    __index = function(self, index)
+        return cloneref(game.GetService(game, index))
+    end
+})
+
+local proximity_prompt_service = get_service.ProximityPromptService
+local replicated_storage = get_service.ReplicatedStorage
+local user_input_service = get_service.UserInputService
+local market = get_service.MarketplaceService
+local run_service = get_service.RunService
+local workspace = get_service.Workspace
+local players = get_service.Players
+local stats = get_service.Stats
+
 local info = market:GetProductInfo(game.PlaceId)
-
 local local_player = players.LocalPlayer
 
-local skewer_settings = require(replicated_storage.Shared.Dictionaries.SkewerSettings)
+local values = workspace:FindFirstChild("Values")
+local room = values:FindFirstChild("CurrentRoom")
 
-local active_stars = workspace:FindFirstChild("ActiveStars")
-
-local hitbox_expander = false
-local anti_vote_kick = false
-local collect_stars = false
-local bring_closest = false
-local show_hitbox = false
-local hold_check = false
-local kill_aura = false
-local auto_farm = false
-local auto_eat = false
-local no_delay = false
+local spam_npcs = false
 local inf_jump = false
-local tp_walk = false
 local jumped = false
 
-local star_collect_delay = 0
-local tp_walk_speed = 5
-local hitbox_x = 5
-local hitbox_y = 5
-local hitbox_z = 5
-
-workspace.ChildAdded:Connect(function(h)
-    if h.Name == "Hitbox" and hitbox_expander then
-        h.Size = Vector3.new(hitbox_x, hitbox_y, hitbox_z)
-    end
-
-    if h.Name == "Hitbox" and show_hitbox then
-        h.Transparency = 0
-    end
-end)
+local spam_delay = 0
 
 user_input_service.JumpRequest:Connect(function()
     if inf_jump and not jumped then
@@ -83,266 +64,186 @@ user_input_service.JumpRequest:Connect(function()
     end
 end)
 
-local speed_connection = run_service.Heartbeat:Connect(function()
-    if tp_walk and local_player.Character and local_player.Character:FindFirstChild("Humanoid") then
-         if local_player.Character.Humanoid.MoveDirection.Magnitude > 0 then
-            local_player.Character:TranslateBy(local_player.Character.Humanoid.MoveDirection * tp_walk_speed / 10)
+elevator_group:AddDivider()
+
+elevator_group:AddLabel("If you didn't get the room completed in some rooms, keep pressing it until it works.", true)
+
+elevator_group:AddDivider()
+
+elevator_group:AddLabel("Note: Run The Cheat Round First When The Round Actually Starts", true)
+
+elevator_group:AddDivider()
+
+elevator_group:AddLabel("Current Supported Floors: 28", true)
+
+elevator_group:AddDivider()
+
+elevator_group:AddButton({
+    Text = 'Cheat Round',
+    Func = function()
+        if local_player:GetAttribute("inlobby") then
+            library:Notify("Cant Run This In Lobby")
+            return
         end
-    end
-end)
 
-combat_group:AddDivider()
-
-combat_group:AddToggle('kill_aura', {
-    Text = 'Kill Aura',
-    Default = kill_aura,
-    Tooltip = 'Attacks nearby players with selected distance',
-
-    Callback = function(Value)
-        kill_aura = Value
-        if Value then
-            repeat
-                local targets = {}
-                for _, v in next, players:GetPlayers() do
-                    if v ~= local_player and local_player.Character and local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChild("HumanoidRootPart") and v.Character and v.Character:FindFirstChild("HumanoidRootPart") and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 and (v.Character:GetPivot().Position - local_player.Character:GetPivot().Position).Magnitude < 18 then
-                        table.insert(targets, v)
-                    end
-                end
-                
-                if #targets > 0 then
-                    local tool = local_player.Character:FindFirstChildOfClass("Tool")
-                    for _, v in next, targets do
-                        replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("SkewerHit"):FireServer(v)
-
-                        if bring_closest then
-                            v.Character.HumanoidRootPart.CFrame = local_player.Character.HumanoidRootPart.CFrame + local_player.Character.HumanoidRootPart.CFrame.LookVector * 4
-                        end
-
-                        if tool:FindFirstChild("Bodies") and #tool.Bodies:GetChildren() > 3 then
-                            replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("EatSkewer"):FireServer()
-                        end
-                    end
-                end
-                task.wait()
-            until not kill_aura
+        if room.Value == nil then
+            library:Notify("No Active Round Found")
+            return
         end
-    end
-})
 
-combat_group:AddToggle('bring_closest', {
-    Text = 'Bring Closest Targets',
-    Default = bring_closest,
-    Tooltip = 'Brings closest targets infront of you',
-
-    Callback = function(Value)
-        bring_closest = Value
-    end
-})
-
-combat_group:AddDivider()
-
-combat_group:AddToggle('auto_farm', {
-    Text = 'Auto Farm',
-    Default = auto_farm,
-    Tooltip = 'Farms kills, coins',
-
-    Callback = function(Value)
-        auto_farm = Value
-        if Value then
-            local last_position = local_player.Character:GetPivot().Position
-            repeat
-                if not kill_aura then
-                    if local_player.Character and not local_player.Character:FindFirstChildOfClass("TooL") and local_player.Backpack:FindFirstChildOfClass("Tool") then
-                        local_player.Character:FindFirstChild("Humanoid"):EquipTool(local_player.Backpack:FindFirstChildOfClass("Tool"))
-                    end
-
-                    v = players:GetPlayers()[math.random(1, #players:GetPlayers())]
-                    if v ~= local_player and local_player.Character and local_player.Character:FindFirstChild("HumanoidRootPart") and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-                        local_player.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame + v.Character.HumanoidRootPart.CFrame.LookVector * -8
-                        task.wait(.1)
-                        replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("SkewerHit"):FireServer(v)
-
-                        if local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChildOfClass("Tool"):FindFirstChild("Bodies") and #local_player.Character:FindFirstChildOfClass("Tool").Bodies:GetChildren() > 3 then
-                            replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("EatSkewer"):FireServer()
-                        end
-                    end
-                end
-                task.wait()
-            until not auto_farm
-            local_player.Character.HumanoidRootPart.CFrame = last_position
+        if not (local_player.Character or local_player.Character:FindFirstChild("HumanoidRootPart")) then
+            library:Notify("LocalPlayer Not Found")
+            return
         end
-    end
-})
 
-combat_group:AddToggle('tool_check', {
-    Text = 'Tool Held Check',
-    Default = hold_check,
-    Tooltip = 'Only goes for people that are holding a tool',
-
-    Callback = function(Value)
-        hold_check = Value
-    end
-})
-
-combat_group:AddDivider()
-
-combat_group:AddToggle('auto_eat', {
-    Text = 'Auto Eat',
-    Default = auto_eat,
-    Tooltip = 'Automatically eats people',
-
-    Callback = function(Value)
-        auto_eat = Value
-        if Value then
-            local notified = false
-            repeat
-                if kill_aura and not notified then
-                    library:Notify("This wont run when kill aura is on")
-                    notified = true
+        if workspace:FindFirstChild("SnowySlope") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.SnowySlope.WinPart, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.SnowySlope.WinPart, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.SnowySlope.WinPart.CFrame
+            library:Notify("Teleported To End")
+        elseif workspace:FindFirstChild("Splitsville_Wipeout") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.Splitsville_Wipeout.Checkpoints.EndCheckpoint, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.Splitsville_Wipeout.Checkpoints.EndCheckpoint, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.Splitsville_Wipeout.Checkpoints.EndCheckpoint.CFrame
+            library:Notify("Teleported To End")
+        elseif workspace:FindFirstChild("WALL_OF") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.WALL_OF.Build.YOU_WIN, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.WALL_OF.Build.YOU_WIN, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.WALL_OF.Build.YOU_WIN.CFrame
+            library:Notify("Teleported To End")
+        elseif workspace:FindFirstChild("TeapotDodgeball") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.TeapotDodgeball.Build.Finish, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.TeapotDodgeball.Build.Finish, 1)
+            library:Notify("Teleported To End")
+        elseif workspace:FindFirstChild("FindThePath") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.FindThePath.Build.End.win_zone, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.FindThePath.Build.End.win_zone, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.FindThePath.Build.End.win_zone.CFrame
+            library:Notify("Teleported To End")
+        elseif workspace:FindFirstChild("StanelyRoom") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.StanelyRoom.Build.Generated.Ending.EndTouch, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.StanelyRoom.Build.Generated.Ending.EndTouch, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.StanelyRoom.Build.Generated.Ending.EndTouch.CFrame
+            library:Notify("Teleported To End")
+        elseif workspace:FindFirstChild("FloodFillMine") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.FloodFillMine.Build.Shield.Bubble, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.FloodFillMine.Build.Shield.Bubble, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.FloodFillMine.Build.Shield.Bubble.CFrame
+            library:Notify("Teleported To End")
+        elseif workspace:FindFirstChild("SuperDropper") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.SuperDropper.Build.WinPool, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.SuperDropper.Build.WinPool, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.SuperDropper.Build.WinPool.CFrame
+            library:Notify("Teleported To End")  
+        elseif workspace:FindFirstChild("Dance") then
+            local_player.Character.HumanoidRootPart.CFrame = workspace.Elevator.Floor.CFrame + Vector3.new(0, 5, 0)
+            library:Notify("Teleported To Safe Spot!")
+        elseif workspace:FindFirstChild("SLIDE_9999999999_FEET_DOWN_RAINBOW") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.SLIDE_9999999999_FEET_DOWN_RAINBOW.Build.Target.MiddleRing, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.SLIDE_9999999999_FEET_DOWN_RAINBOW.Build.Target.MiddleRing, 1)
+            library:Notify("Touched Middle Point")
+        elseif workspace:FindFirstChild("Minefield") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.Minefield.Build.WinPart, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.Minefield.Build.WinPart, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.Minefield.Build.WinPart.CFrame
+            library:Notify("Teleported To End")
+        elseif workspace:FindFirstChild("Obby") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.Obby.Build.EndPlatform, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.Obby.Build.EndPlatform, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.Obby.Build.EndPlatform.CFrame
+            library:Notify("Teleported To End")
+        elseif workspace:FindFirstChild("FunTimesAtSquishyFlood") then
+            local_player.Character.HumanoidRootPart.CFrame = workspace.FunTimesAtSquishyFlood.Build.Winparts:GetChildren()[4].CFrame
+            library:Notify("Teleported To End")
+        elseif workspace:FindFirstChild("Superhighway") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.Superhighway.WinPoint, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.Superhighway.WinPoint, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.Superhighway.WinPoint.CFrame
+            library:Notify("Teleported To End")
+        elseif workspace:FindFirstChild("SuspiciouslyLongRoom") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.SuspiciouslyLongRoom.Build.WinPool, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.SuspiciouslyLongRoom.Build.WinPool, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.SuspiciouslyLongRoom.Build.WinPool.CFrame
+            library:Notify("Teleported To End")
+        elseif workspace:FindFirstChild("HotelFloor6") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.HotelFloor6.Build.WinPart, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.HotelFloor6.Build.WinPart, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.HotelFloor6.Build.WinPart.CFrame
+            library:Notify("Teleported To End")
+        elseif workspace:FindFirstChild("HALL_OF") then
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.HALL_OF.Build.YOU_WIN, 0)
+            firetouchinterest(local_player.Character.HumanoidRootPart, workspace.HALL_OF.Build.YOU_WIN, 1)
+            local_player.Character.HumanoidRootPart.CFrame = workspace.HALL_OF.Build.YOU_WIN.CFrame
+            library:Notify("Teleported To End")
+        elseif workspace:FindFirstChild("Jeremy") then
+            local_player.Character.HumanoidRootPart.CFrame = workspace.Jeremy.Build.JeremyVictory.CFrame
+            library:Notify("Teleported To Button")
+        elseif workspace:FindFirstChild("ColorTheTiles") then
+            for _, v in next, workspace.ColorTheTiles.Tiles:GetDescendants() do
+                if v:IsA("TouchTransmitter") then
+                    firetouchinterest(local_player.Character.HumanoidRootPart, v.Parent, 0)
+                    firetouchinterest(local_player.Character.HumanoidRootPart, v.Parent, 1)
                 end
-                if local_player.Character and local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChildOfClass("Tool"):FindFirstChild("Bodies"):FindFirstChildOfClass("Model") and not kill_aura then
-                    replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("EatSkewer"):FireServer()
+            end
+            library:Notify("Gooned All Over Tiles")
+        elseif workspace:FindFirstChild("FunnyMaze") then
+            for _, v in next, workspace.FunnyMaze.Build.FinalNotes:GetDescendants() do
+                if v:IsA("ClickDetector") then
+                    fireclickdetector(v)
                 end
-                task.wait(1)
-            until not auto_eat
-        end
-    end
-})
-
-combat_group:AddToggle('no_delay', {
-    Text = 'No Swing Cooldown',
-    Default = no_delay,
-    Tooltip = 'Removes cooldown on swings',
-
-    Callback = function(Value)
-        no_delay = Value
-        if Value then
-            skewer_settings.Cooldown = 0
+            end
+            library:Notify("Collected All Notes")
+        elseif workspace:FindFirstChild("SurvivalTheArea51") then
+            for _, v in next, workspace.SurvivalTheArea51.Build:GetDescendants() do
+                if v:IsA("ProximityPrompt") then
+                    fireproximityprompt(v)
+                end
+            end
+            library:Notify("Activated All Generators")
+        elseif workspace:FindFirstChild("UES") then
+            for _, v in next, workspace.UES.Build:GetDescendants() do
+                if v:IsA("ClickDetector") and not v.Parent:GetAttribute("InUse") then
+                    fireclickdetector(v)
+                end
+            end
+            library:Notify("Clicked All Boxes")
+        elseif workspace:FindFirstChild("MozellesCastle") then
+            workspace:WaitForChild("MozellesCastle"):WaitForChild("AddScore"):FireServer(9e9)
+            library:Notify("Gave 9 Billion Points!")
+        elseif workspace:FindFirstChild("3008_Room") then
+            fireclickdetector(workspace["3008_Room"].Build.Lampert.ClickDetector)
+            library:Notify("Found Silly Lampert")
+        elseif workspace:FindFirstChild("RandomMazeWindows") then
+            fireclickdetector(workspace.RandomMazeWindows.Build:GetChildren()[6])
+            library:Notify("Found Silly Lampert")
+        elseif workspace:FindFirstChild("ButtonCompetition") then
+            for _, v in next, workspace.ButtonCompetition.Build.Buttons:GetDescendants() do
+                if v:IsA("ClickDetector") and v.Parent.Parent:GetAttribute("Active") then
+                    fireclickdetector(v)
+                end
+            end
+            library:Notify("Clicked All Buttons")
         else
-            skewer_settings.Cooldown = 1.5
+            library:Notify("Current Round Not Supported")
         end
-    end
-})
-
-combat_group:AddDivider()
-
-combat_group:AddToggle('hitbox_expander', {
-    Text = 'Swing Hitbox Expander',
-    Default = hitbox_expander,
-    Tooltip = 'Expands hitbox on swing',
-
-    Callback = function(Value)
-        hitbox_expander = Value
-    end
-})
-
-combat_group:AddSlider('x', {
-    Text = 'Hitbox Size X:',
-    Default = hitbox_x,
-    Min = 1,
-    Max = 20,
-    Rounding = 0,
-    Compact = false,
-
-    Callback = function(Value)
-        hitbox_x = Value
-    end
-})
-
-combat_group:AddSlider('y', {
-    Text = 'Hitbox Size Y:',
-    Default = hitbox_y,
-    Min = 1,
-    Max = 20,
-    Rounding = 0,
-    Compact = false,
-
-    Callback = function(Value)
-        hitbox_y = Value
-    end
-})
-
-combat_group:AddSlider('z', {
-    Text = 'Hitbox Size Z:',
-    Default = hitbox_z,
-    Min = 1,
-    Max = 10,
-    Rounding = 0,
-    Compact = false,
-
-    Callback = function(Value)
-        hitbox_z = Value
-    end
-})
-
-combat_group:AddDivider()
-
-combat_group:AddToggle('show_hitbox', {
-    Text = 'Show Hitbox',
-    Default = show_hitbox,
-    Tooltip = 'Shows hitbox on swing',
-
-    Callback = function(Value)
-        show_hitbox = Value
-    end
-})
-
-game_group:AddDivider()
-
-game_group:AddToggle('collect_stars', {
-    Text = 'Auto Collect Stars',
-    Default = collect_stars,
-    Tooltip = 'Automatically collects stars around the map',
-
-    Callback = function(Value)
-        collect_stars = Value
-        if Value then
-            repeat
-                if local_player.Character and local_player.Character:FindFirstChild("HumanoidRootPart") and #active_stars:GetChildren() > 0 then
-                    for _, v in next, active_stars:GetDescendants() do
-                        if v:IsA("TouchTransmitter") then
-                            firetouchinterest(local_player.Character.HumanoidRootPart, v.Parent, 0)
-                            firetouchinterest(local_player.Character.HumanoidRootPart, v.Parent, 1)
-                        end
-                    end
-                end
-                task.wait(star_collect_delay)
-            until not collect_stars
-        end
-    end
-})
-
-game_group:AddSlider('collect_delay', {
-    Text = 'Star Collect Delay:',
-    Default = star_collect_delay,
-    Min = 0,
-    Max = 60,
-    Rounding = 1,
-    Compact = false,
-
-    Callback = function(Value)
-        star_collect_delay = Value
-    end
-})
-
-game_group:AddDivider()
-
-game_group:AddButton({
-    Text = 'Redeem Daily Rewards',
-    Func = function()
-        replicated_storage.Remotes.Client.ClaimDailyReward:FireServer()
     end,
     DoubleClick = false,
-    Tooltip = 'Claims daily reward'
+    Tooltip = 'Cheat current round'
 })
 
-game_group:AddButton({
-    Text = 'Redeem OG Rewards',
+elevator_group:AddDivider()
+
+elevator_group:AddButton({
+    Text = 'Join Game',
     Func = function()
-        replicated_storage.Remotes.Client.ClaimOgBenefits:FireServer()
+        if local_player:GetAttribute("inlobby") then
+            replicated_storage:WaitForChild("RE"):WaitForChild("PutInElevator"):FireServer()
+        else
+            library:Notify("Youre already in game retard")
+        end
     end,
     DoubleClick = false,
-    Tooltip = 'Clims OG daily reward'
+    Tooltip = 'Insta joins the game'
 })
 
 player_group:AddDivider()
@@ -357,51 +258,77 @@ player_group:AddToggle('inf_jump', {
     end
 })
 
-player_group:AddToggle('tp_walk', {
-    Text = 'Tp Walk',
-    Default = tp_walk,
-    Tooltip = 'Moves fast',
+player_group:AddDivider()
+
+player_group:AddButton({
+    Text = 'Reset Character',
+    Func = function()
+        replicated_storage:WaitForChild("RE"):WaitForChild("Respawn"):FireServer()
+        library:Notify("Character Reset!")
+    end,
+    DoubleClick = false,
+    Tooltip = 'Resets your character'
+})
+
+game_group:AddDivider()
+
+
+game_group:AddToggle('spam_npcs', {
+    Text = 'Spam Npcs',
+    Default = spam_npcs,
+    Tooltip = 'Spams the npcs to keep talking',
 
     Callback = function(Value)
-        tp_walk = Value
+        spam_npcs = Value
+        if Value then
+            replicated_storage:WaitForChild("RE"):WaitForChild("Items"):WaitForChild("UpdateIndexing"):FireServer({ ["Kitty"] = 1 })
+            repeat
+                if #workspace.Elevator.Npc.Npcs:GetChildren() > 0 then
+                    for _, v in next, workspace.Elevator.Npc.Npcs:GetChildren() do
+                        if v:IsA("Model") and v:GetAttribute("ID") then
+                            replicated_storage:WaitForChild("RE"):WaitForChild("NPC"):WaitForChild("GiveItem"):FireServer(v:GetAttribute("ID"), "Kitty")
+                            task.wait(spam_delay)
+                        end
+                    end
+                end
+                task.wait()
+            until not spam_npcs
+        end
     end
 })
 
-player_group:AddSlider('tp_walk_speed', {
-    Text = 'Tp Walk Speed:',
-    Default = tp_walk_speed,
-    Min = 1,
+game_group:AddSlider('spam_delay', {
+    Text = 'Npc Spam Delay',
+    Default = spam_delay,
+    Min = 0,
     Max = 10,
-    Rounding = 0,
+    Rounding = 1,
     Compact = false,
 
     Callback = function(Value)
-        tp_walk_speed = Value
+        spam_delay = Value
     end
 })
 
-player_group:AddDivider()
+game_group:AddDivider()
 
-player_group:AddToggle('anti_vote_kick', {
-    Text = 'Anti Vote Kick',
-    Default = anti_vote_kick,
-    Tooltip = 'Prevents getting kicked from server',
-
-    Callback = function(Value)
-        anti_vote_kick = Value
-        if Value then
-            local tried_kick = false
-            repeat
-                if string.find(local_player.PlayerGui.Votekick.Frame.Title.Text, local_player.Name) then
-                    library:Notify("Detected Vote Kick For LocalPlayer Rejoining...")
-                    task.wait(3)
-                    tried_kick = true
-                    teleport_service:TeleportToPlaceInstance(game.PlaceId, game.JobId, local_player)
+game_group:AddButton({
+    Text = 'Explode All Mines',
+    Func = function()
+        if workspace:FindFirstChild("Minefield") then
+            for _, v in next, workspace.Minefield.Build.MinesFolder.Mines:GetDescendants() do
+                if v:IsA("TouchTransmitter") then
+                    firetouchinterest(local_player.Character.HumanoidRootPart, v.Parent, 0)
+                    firetouchinterest(local_player.Character.HumanoidRootPart, v.Parent, 1)
                 end
-                task.wait()
-            until not anti_vote_kick or tried_kick
+            end
+            library:Notify("5 Big Booms Boom Boom Boom")
+        else
+            library:Notify("Current Room Is Not Minefield!")
         end
-    end
+    end,
+    DoubleClick = false,
+    Tooltip = 'Explode All Mines In Minefield Room'
 })
 
 local FrameTimer = tick()
@@ -424,20 +351,8 @@ local watermark_connection = run_service.RenderStepped:Connect(function()
 end);
 
 menu_group:AddButton('Unload', function()
-    hitbox_expander = false
-    anti_vote_kick = false
-    collect_stars = false
-    bring_closest = false
-    show_hitbox = false
-    kill_aura = false
-    auto_farm = false
-    auto_eat = false
-    no_delay = false
+    spam_npcs = false
     inf_jump = false
-    tp_walk = false
-    skewer_settings.Cooldown = 1.5
-    watermark_connection:Disconnect()
-    speed_connection:Disconnect()
     library:Unload()
 end)
 
@@ -448,7 +363,7 @@ save_manager:SetLibrary(library)
 save_manager:IgnoreThemeSettings()
 save_manager:SetIgnoreIndexes({ 'MenuKeybind' })
 theme_manager:SetFolder('Astolfo Ware')
-save_manager:SetFolder('Astolfo Ware/kebab Fight')
+save_manager:SetFolder('Astolfo Ware/Regretavator')
 save_manager:BuildConfigSection(tabs['ui settings'])
 theme_manager:ApplyToTab(tabs['ui settings'])
 save_manager:LoadAutoloadConfig()
