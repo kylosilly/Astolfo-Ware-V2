@@ -28,7 +28,6 @@ local game_group = tabs.main:AddRightGroupbox('Game Settings')
 local player_group = tabs.main:AddRightGroupbox('Player Settings')
 local menu_group = tabs['ui settings']:AddLeftGroupbox('Menu')
 
-local queue_teleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
 local replicated_storage = cloneref(game:GetService("ReplicatedStorage"))
 local user_input_service = cloneref(game:GetService("UserInputService"))
 local teleport_service = cloneref(game:GetService("TeleportService"))
@@ -104,23 +103,23 @@ combat_group:AddToggle('kill_aura', {
         if Value then
             repeat
                 local targets = {}
-                if local_player.Character and local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChild("HumanoidRootPart") and #players:GetPlayers() > 1 then
-                    for _, v in next, players:GetPlayers() do
-                        if v ~= local_player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 and (v.Character:GetPivot().Position - local_player.Character:GetPivot().Position).Magnitude < 18 then
-                            table.insert(targets, v)
-                        end
+                for _, v in next, players:GetPlayers() do
+                    if v ~= local_player and local_player.Character and local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChild("HumanoidRootPart") and v.Character and v.Character:FindFirstChild("HumanoidRootPart") and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 and (v.Character:GetPivot().Position - local_player.Character:GetPivot().Position).Magnitude < 18 then
+                        table.insert(targets, v)
                     end
-                    if #targets > 0 then
-                        for _, v in next, targets do
-                            if bring_closest then
-                                v.Character.HumanoidRootPart.CFrame = local_player.Character.HumanoidRootPart.CFrame + local_player.Character.HumanoidRootPart.CFrame.LookVector * 4
-                            end
+                end
+                
+                if #targets > 0 then
+                    local tool = local_player.Character:FindFirstChildOfClass("Tool")
+                    for _, v in next, targets do
+                        replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("SkewerHit"):FireServer(v)
 
-                            replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("SkewerHit"):FireServer(v)
-                            
-                            if local_player.Character:FindFirstChildOfClass("Tool"):FindFirstChild("Bodies") and #local_player.Character:FindFirstChildOfClass("Tool").Bodies:GetChildren() > 3 then
-                                replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("EatSkewer"):FireServer()
-                            end
+                        if bring_closest then
+                            v.Character.HumanoidRootPart.CFrame = local_player.Character.HumanoidRootPart.CFrame + local_player.Character.HumanoidRootPart.CFrame.LookVector * 4
+                        end
+
+                        if tool:FindFirstChild("Bodies") and #tool.Bodies:GetChildren() > 3 then
+                            replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("EatSkewer"):FireServer()
                         end
                     end
                 end
@@ -150,36 +149,27 @@ combat_group:AddToggle('auto_farm', {
     Callback = function(Value)
         auto_farm = Value
         if Value then
-            local notified = false
             local last_position = local_player.Character:GetPivot().Position
             repeat
-                local tool = local_player.Character:FindFirstChildOfClass("Tool")
-
-                if kill_aura and not notified then
-                    library:Notify("This wont run when kill aura is on")
-                    notified = true
-                end
-
                 if not kill_aura then
-                    if not tool and local_player.Character and local_player.Backpack:FindFirstChildOfClass("Tool") then
+                    if local_player.Character and not local_player.Character:FindFirstChildOfClass("TooL") then
                         local_player.Character:FindFirstChild("Humanoid"):EquipTool(local_player.Backpack:FindFirstChildOfClass("Tool"))
                     end
 
-                    local player = players:GetPlayers()[math.random(1, #players:GetPlayers())]
-                    if player ~= local_player and local_player.Character and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 and (hold_check and player.Character:FindFirstChildOfClass("Tool") or not hold_check) then
-                        local_player.Character:TranslateBy(player.Character:GetPivot().Position - local_player.Character:GetPivot().Position)
-                        task.wait(.2)
-                        replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("SkewerHit"):FireServer(player)
-                        
-                        if tool and tool:FindFirstChild("Bodies") and #tool.Bodies:GetChildren() > 3 then
+                    v = players:GetPlayers()[math.random(1, #players:GetPlayers())]
+                    if v ~= local_player and local_player.Character and local_player.Character:FindFirstChild("HumanoidRootPart") and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                        local_player.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame + v.Character.HumanoidRootPart.CFrame.LookVector * -8
+                        task.wait(.1)
+                        replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("SkewerHit"):FireServer(v)
+
+                        if local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChildOfClass("Tool"):FindFirstChild("Bodies") and #local_player.Character:FindFirstChildOfClass("Tool").Bodies:GetChildren() > 3 then
                             replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("EatSkewer"):FireServer()
                         end
-                        task.wait()
                     end
                 end
                 task.wait()
             until not auto_farm
-            local_player.Character:TranslateBy(last_position - local_player.Character:GetPivot().Position)
+            local_player.Character.HumanoidRootPart.CFrame = last_position
         end
     end
 })
@@ -400,16 +390,16 @@ player_group:AddToggle('anti_vote_kick', {
     Callback = function(Value)
         anti_vote_kick = Value
         if Value then
-            local done = false
+            local tried_kick = false
             repeat
                 if string.find(local_player.PlayerGui.Votekick.Frame.Title.Text, local_player.Name) then
                     library:Notify("Detected Vote Kick For LocalPlayer Rejoining...")
-                    done = true
-                    queue_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/kylosilly/Astolfo-Ware-V2/refs/heads/main/Loader.lua'))()")
+                    task.wait(3)
+                    tried_kick = true
                     teleport_service:TeleportToPlaceInstance(game.PlaceId, game.JobId, local_player)
                 end
                 task.wait()
-            until not anti_vote_kick or done
+            until not anti_vote_kick or tried_kick
         end
     end
 })
