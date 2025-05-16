@@ -101,7 +101,7 @@ function get_eggs()
         print("No Eggs To Buy")
         return
     else
-        for _,v in next, workspace.NPCS["Pet Stand"].EggLocations:GetChildren() do
+        for i,v in next, workspace.NPCS["Pet Stand"].EggLocations:GetChildren() do
             if table.find(setting.eggs, v.Name) then
                 replicated_storage:WaitForChild("GameEvents"):WaitForChild("BuyPetEgg"):FireServer(i - 3)
                 task.wait(.1)
