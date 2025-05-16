@@ -1,3 +1,21 @@
+--[[
+    Seed And Egg Sniper By @kylosilly
+    Version: V1.0.0
+    Put This In Auto Execute Folder
+
+    Note: Put The Exact Names Of It In The Settings Or It Wont Work!
+	Server Hop Might Not Always Work So Yes
+]]
+
+settings = {
+    webhook = "https://discord.com/api/webhooks/1243624577595215922/Mm5PiVjf_iEEte_qfQkyF51UlwwFi_xr03unYEseeijPsHrrD7F2_Du0wjH3V2_9ciHu", -- Webhook For Notifiying For Other People Or Just Yourself If You Gotten Specific Item
+    ping_role = "", -- Role To Ping If Specific Item Found You Can Also Leave This Blank To Ping All
+    method = "Egg", -- Seed, Egg, Both [Explanation: https://pastebin.com/f6SfZcZs]
+    eggs = {"Common Egg"}, -- Egg Names Can Be Found In ReplicatedStorage.AssetsModels.EggModels
+    seeds = {}, -- Seed Names Can Be Found In ReplicatedStorage.Seed_Models
+    server_hop_delay = 1, -- 10-30 recommended (In Seconds)
+}
+
 local setting = getfenv().settings
 
 if not game:IsLoaded() then
@@ -5,6 +23,8 @@ if not game:IsLoaded() then
     game.Loaded:Wait()
     print("Loaded Game")
 end
+
+task.wait(5)
 
 local http_request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 local replicated_storage = cloneref(game:GetService("ReplicatedStorage"))
