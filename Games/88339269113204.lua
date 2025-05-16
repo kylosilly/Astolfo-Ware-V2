@@ -85,7 +85,7 @@ user_input_service.JumpRequest:Connect(function()
 end)
 
 local speed_connection = run_service.Heartbeat:Connect(function()
-    if tp_walk and local_player.Character and local_player.Character:FindFirstChild("Humanoid") and local_player.Character:FindFirstChild("HumanoidRootPart") then
+    if tp_walk and local_player.Character and local_player.Character:FindFirstChild("Humanoid") then
          if local_player.Character.Humanoid.MoveDirection.Magnitude > 0 then
             local_player.Character:TranslateBy(local_player.Character.Humanoid.MoveDirection * tp_walk_speed / 10)
         end
@@ -404,10 +404,9 @@ player_group:AddToggle('anti_vote_kick', {
             repeat
                 if string.find(local_player.PlayerGui.Votekick.Frame.Title.Text, local_player.Name) then
                     library:Notify("Detected Vote Kick For LocalPlayer Rejoining...")
-                    task.wait(2)
                     done = true
-                    teleport_service:TeleportToPlaceInstance(game.PlaceId, game.JobId, local_player)
                     queue_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/kylosilly/Astolfo-Ware-V2/refs/heads/main/Loader.lua'))()")
+                    teleport_service:TeleportToPlaceInstance(game.PlaceId, game.JobId, local_player)
                 end
                 task.wait()
             until not anti_vote_kick or done
