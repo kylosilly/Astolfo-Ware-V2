@@ -572,13 +572,13 @@ seed_shop_group:AddSlider('seed_buy_delay', {
 
 seed_shop_group:AddDivider()
 
-seed_shop_group:AddToggle('auto_buy_seeds', {
+seed_shop_group:AddToggle('auto_buy_event_items', {
     Text = 'Auto Buy Event Items',
     Default = auto_buy_event_items,
     Tooltip = 'Buys selected event items',
 
     Callback = function(Value)
-        auto_buy_seeds = Value
+        auto_buy_event_items = Value
         if Value then
             repeat
                 for i, _ in next, selected_event_items do
