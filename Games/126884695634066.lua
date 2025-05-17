@@ -4,6 +4,12 @@ if not game:IsLoaded() then
     print("Loaded Game")
 end
 
+if getthreadcontext() > 7 then
+    print("Executor Supported")
+else
+    print("Since Many Were Confused, Executor Isnt Thread 7 Which Is Required For This Script To Work Use Swift Or Volcano!")
+end
+
 local repo = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
 local library = loadstring(game:HttpGet(repo .. 'Gui%20Lib%20%5BLibrary%5D'))()
@@ -56,15 +62,18 @@ if identifyexecutor() == "Swift" then
     setthreadidentity(8)
 end
 
+local event_shop = require(replicated_storage.Data.EventShopData)
 local egg_shop = require(replicated_storage.Data.PetEggData)
 local seed_shop = require(replicated_storage.Data.SeedData)
 local gear_shop = require(replicated_storage.Data.GearData)
 
+local selected_event_items = {}
 local selected_mutations = {}
 local selected_seeds = {}
 local selected_gears = {}
 local selected_eggs = {}
 local mutations = {}
+local event = {}
 local seeds = {}
 local gears = {}
 local eggs = {}
@@ -98,12 +107,19 @@ for _, v in next, gear_shop do
     end
 end
 
+for i, v in next, event_shop do
+    if v.StockChance > 0 then
+        table.insert(event, i)
+    end
+end
+
 for _, v in next, replicated_storage.Mutation_FX:GetChildren() do
     table.insert(mutations, v.Name)
 end
 table.insert(mutations, "Gold")
 table.insert(mutations, "Rainbow")
 
+local auto_buy_event_items = false
 local auto_give_moonlits = false
 local auto_buy_seeds = false
 local auto_buy_gears = false
@@ -114,6 +130,7 @@ local auto_plant = false
 local hatch_aura = false
 local auto_sell = false
 
+local event_item_buy_delay = 1
 local pickup_aura_range = 20
 local pickup_aura_delay = 0.1
 local hatch_aura_delay = 0.1
@@ -170,7 +187,7 @@ plant_group:AddToggle('pickup_aura', {
 
             repeat
                 for _, v in next, farm:FindFirstChild("Plants_Physical"):GetChildren() do
-                    if v:IsA("Model") and local_player.Character:FindFirstChild("HumanoidRootPart") then
+                    if v:IsA("Model") and local_player.Character and local_player.Character:FindFirstChild("HumanoidRootPart") then
                         for _, v2 in next, v:GetDescendants() do
                             if v2:IsA("ProximityPrompt") and v2.Parent.Parent:FindFirstChild("Weight") and v2.Parent.Parent.Weight.Value > tonumber(min_pickup_aura) and (v:GetPivot().Position - local_player.Character:GetPivot().Position).Magnitude < pickup_aura_range then
                                 fireproximityprompt(v2)
@@ -555,6 +572,54 @@ seed_shop_group:AddSlider('seed_buy_delay', {
 
 seed_shop_group:AddDivider()
 
+seed_shop_group:AddToggle('auto_buy_seeds', {
+    Text = 'Auto Buy Event Items',
+    Default = auto_buy_event_items,
+    Tooltip = 'Buys selected event items',
+
+    Callback = function(Value)
+        auto_buy_seeds = Value
+        if Value then
+            repeat
+                for i, _ in next, selected_event_items do
+                    if workspace:GetAttribute("BloodMoonEvent") then
+                        replicated_storage:WaitForChild("GameEvents"):WaitForChild("BuyEventShopStock"):FireServer(i)
+                    end
+                end
+            task.wait(event_item_buy_delay)
+            until not auto_buy_event_items
+        end           
+    end
+})
+
+seed_shop_group:AddDropdown('selected_event_items', {
+    Values = event,
+    Default = selected_event_items,
+    Multi = true,
+
+    Text = 'Select Event Items To Auto Buy:',
+    Tooltip = 'Buys selected event items',
+
+    Callback = function(Value)
+        selected_event_items = Value
+    end
+})
+
+seed_shop_group:AddSlider('event_item_buy_delay', {
+    Text = 'Event Item Buy Delay:',
+    Default = event_item_buy_delay,
+    Min = 0,
+    Max = 60,
+    Rounding = 0,
+    Compact = false,
+
+    Callback = function(Value)
+        event_item_buy_delay = Value
+    end
+})
+
+seed_shop_group:AddDivider()
+
 seed_shop_group:AddButton({
     Text = 'Buy Seeds',
     Func = function()
@@ -564,6 +629,17 @@ seed_shop_group:AddButton({
     end,
     DoubleClick = false,
     Tooltip = 'Buys selected seeds'
+})
+
+seed_shop_group:AddButton({
+    Text = 'Buy Event Items',
+    Func = function()
+        for i, _ in next, selected_event_items do
+            replicated_storage:WaitForChild("GameEvents"):WaitForChild("BuyEventShopStock"):FireServer(i)
+        end
+    end,
+    DoubleClick = false,
+    Tooltip = 'Buys selected event items'
 })
 
 gear_shop_group:AddDivider()
@@ -915,6 +991,7 @@ local watermark_connection = run_service.RenderStepped:Connect(function()
 end);
 
 menu_group:AddButton('Unload', function()
+    auto_buy_event_items = false
     auto_give_moonlits = false
     auto_buy_seeds = false
     auto_buy_gears = false
