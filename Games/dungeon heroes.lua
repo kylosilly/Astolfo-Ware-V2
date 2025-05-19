@@ -4,8 +4,6 @@ if not game:IsLoaded() then
     print("Loaded Game")
 end
 
-task.wait(5)
-
 local repo = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
 local library = loadstring(game:HttpGet(repo .. 'Gui%20Lib%20%5BLibrary%5D'))()
@@ -29,6 +27,7 @@ local game_group = tabs.main:AddLeftGroupbox('Game Settings')
 local player_group = tabs.main:AddRightGroupbox('Player Settings')
 local menu_group = tabs['ui settings']:AddLeftGroupbox('Menu')
 
+local queue_teleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
 local replicated_storage = cloneref(game:GetService('ReplicatedStorage'))
 local user_input_service = cloneref(game:GetService('UserInputService'))
 local local_player = cloneref(game:GetService('Players').LocalPlayer)
@@ -167,9 +166,11 @@ game_group:AddToggle('goto_closest', {
     Callback = function(Value)
         goto_closest = Value
         if Value then
+            local current_mob = nil
             repeat
                 local mob = closest_mob()
-                if mob then
+                if mob and mob ~= current_mob then
+                    current_mob = mob
                     task.wait(.1)
                     local velocity_connection = run_service.Heartbeat:Connect(function()
                         if local_player.Character and local_player.Character:FindFirstChild("HumanoidRootPart") then
@@ -179,12 +180,14 @@ game_group:AddToggle('goto_closest', {
                     end)
                     local to = mob:GetPivot().Position
                     local distance = (to - local_player.Character:FindFirstChild("HumanoidRootPart").Position).Magnitude
-                    local tween = tween_service:Create(local_player.Character:FindFirstChild("HumanoidRootPart"), TweenInfo.new(distance / 200, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = CFrame.new(mob and mob:GetPivot().Position) + Vector3.new(0, stud_offset, 0)})
+                    local tween = tween_service:Create(local_player.Character:FindFirstChild("HumanoidRootPart"), TweenInfo.new(distance / 200, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = CFrame.new(to + Vector3.new(0, stud_offset, 0))})
                     tween:Play()
                     tween.Completed:Wait()
                     if velocity_connection then
                         velocity_connection:Disconnect()
                     end
+                elseif current_mob and current_mob:GetAttribute("HP") > 0 then
+                    local_player.Character:FindFirstChild("HumanoidRootPart").CFrame = CFrame.new(current_mob:GetPivot().Position + Vector3.new(0, stud_offset, 0))
                 end
                 task.wait()
             until not goto_closest
