@@ -187,7 +187,7 @@ game_group:AddToggle('goto_closest', {
                         velocity_connection:Disconnect()
                     end
                 elseif current_mob and current_mob:GetAttribute("HP") > 0 then
-                    local_player.Character:FindFirstChild("HumanoidRootPart").CFrame = CFrame.new(current_mob:GetPivot().Position + Vector3.new(0, stud_offset, 0))
+                    local_player.Character:MoveTo(current_mob:GetPivot().Position + Vector3.new(0, stud_offset, 0))
                 end
                 task.wait()
             until not goto_closest
