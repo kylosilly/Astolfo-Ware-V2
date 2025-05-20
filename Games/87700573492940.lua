@@ -57,6 +57,10 @@ for _, v in next, workspace.Plots:GetDescendants() do
     end
 end
 
+if not plot then
+    local_player:Kick("Plot not found!")
+end
+
 shop_group:AddButton({
     Text = 'Sell All',
     Func = function()
@@ -163,7 +167,7 @@ mine_group:AddToggle('auto_collect_drills', {
         if Value then
             repeat
                 for _, v in next, plot.Drills:GetChildren() do
-                    if drill_collect_method == "Full" and v:FindFirstChild("DrillData") and not v.DrillData:FindFirstChild("Drilling").Value then
+                    if drill_collect_method == "Full" and v:IsA("Model") and v:FindFirstChild("DrillData") and not v.DrillData:FindFirstChild("Drilling").Value then
                         replicated_storage:WaitForChild("Packages"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("PlotService"):WaitForChild("RE"):WaitForChild("CollectDrill"):FireServer(v)
                         task.wait(.5)
                     elseif drill_collect_method == "An Ore" and v:FindFirstChild("Ores") and v.Ores:FindFirstChildOfClass("IntValue") then
