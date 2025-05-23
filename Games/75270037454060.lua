@@ -29,6 +29,7 @@ local menu_group = tabs["ui settings"]:AddLeftGroupbox("Menu Settings")
 local replicated_storage = game:GetService("ReplicatedStorage")
 local user_input_service = game:GetService("UserInputService")
 local market = game:GetService("MarketplaceService")
+local virtual_user = game:GetService("VirtualUser")
 local run_service = game:GetService("RunService")
 local workspace = game:GetService("Workspace")
 local players = game:GetService("Players")
@@ -176,12 +177,19 @@ player_group:AddToggle('inf_jump', {
 player_group:AddButton({
     Text = 'Anti Afk',
     Func = function()
-        for _, v in next, get_gc(local_player.Idled) do
-            if v["Disable"] then
-                v["Disable"](v)
-            elseif v["Disconnect"] then
-                v["Disconnect"](v)
+        if get_gc then
+            for _, v in next, get_gc(local_player.Idled) do
+                if v["Disable"] then
+                    v["Disable"](v)
+                elseif v["Disconnect"] then
+                    v["Disconnect"](v)
+                end
             end
+        else
+            local_player.Idled:Connect(function()
+                virtual_user:CaptureController()
+                virtual_user:ClickButton2(Vector2.new())
+            end)
         end
         library:Notify("Anti Afk Enabled!")
     end,
