@@ -22,6 +22,7 @@ local tabs = {
 }
 
 local collect_group = tabs.main:AddLeftGroupbox("Collect Settings")
+local game_group = tabs.main:AddRightGroupbox("Game Settings")
 local player_group = tabs.main:AddRightGroupbox("Player Settings")
 local menu_group = tabs["ui settings"]:AddLeftGroupbox("Menu Settings")
 
@@ -141,6 +142,23 @@ collect_group:AddDropdown('collect_method', {
     Callback = function(Value)
         selected_pickup_method = Value
     end
+})
+
+game_group:AddDivider()
+
+game_group:AddButton({
+    Text = 'Break Server',
+    Func = function()
+        if not local_player.PlayerGui:WaitForChild("GUI"):WaitForChild("MapVoting").Visible then
+            library:Notify("Run this when voting map!")
+            return
+        end
+
+        replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("Worlds"):WaitForChild("SendVote"):FireServer("nigga")
+        library:Notify("Server Broken!")
+    end,
+    DoubleClick = false,
+    Tooltip = 'Will be stuck at 0 and new map wont load'
 })
 
 player_group:AddDivider()
