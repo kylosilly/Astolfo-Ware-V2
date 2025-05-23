@@ -94,7 +94,7 @@ collect_group:AddToggle('auto_collect', {
                 local block = rarest_block()
                 if block then
                     replicated_storage.Remotes.Client.Blocks.PickupBlock:FireServer(block, CFrame.new(local_player.Character:GetPivot().Position))
-                    task.wait()
+                    task.wait(.1)
                 end
                 task.wait()
             until not auto_collect
