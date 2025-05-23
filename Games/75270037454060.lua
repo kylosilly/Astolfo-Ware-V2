@@ -51,11 +51,27 @@ if not block_data then
     local_player:Kick("Block data folder not found!")
 end
 
+local gears = replicated_storage:WaitForChild("Data"):WaitForChild("Gears")
+local unique_gears = replicated_storage:WaitForChild("Data"):WaitForChild("UniqueGears")
+local potions = replicated_storage:WaitForChild("Data"):WaitForChild("Boosts")
+
+if not (gears and unique_gears and potions) then
+    local_player:Kick("???")
+end
+
 local auto_collect = false
 local auto_pickup = false
 local inf_jump = false
 
 local selected_pickup_method = "Remote"
+
+local items = {}
+
+for _, v in next, {gears, unique_gears, potions} do
+	for _, v2 in next, v:GetChildren() do
+		table.insert(items, v2.Name)
+	end
+end
 
 --// Theres better ways to do it but i just did it like that
 function rarest_block()
@@ -162,6 +178,25 @@ game_group:AddButton({
     Tooltip = 'Will be stuck at 0 and new map wont load'
 })
 
+game_group:AddDivider()
+
+game_group:AddDropdown('selected_pin_item', {
+    Values = items,
+    Default = "",
+    Multi = false,
+
+    Text = 'Select Item To Pin:',
+    Tooltip = 'Pins selected item',
+
+    Callback = function(Value)
+        selected_pin_item = Value
+        if Value then
+            replicated_storage:WaitForChild("Remotes"):WaitForChild("Server"):WaitForChild("Gears"):WaitForChild("PinGear"):FireServer(selected_pin_item)
+            library:Notify("Pinned "..selected_pin_item)
+        end
+    end
+})
+
 player_group:AddDivider()
 
 player_group:AddToggle('inf_jump', {
@@ -172,29 +207,6 @@ player_group:AddToggle('inf_jump', {
     Callback = function(Value)
         inf_jump = Value
     end
-})
-
-player_group:AddButton({
-    Text = 'Anti Afk',
-    Func = function()
-        if get_gc then
-            for _, v in next, get_gc(local_player.Idled) do
-                if v["Disable"] then
-                    v["Disable"](v)
-                elseif v["Disconnect"] then
-                    v["Disconnect"](v)
-                end
-            end
-        else
-            local_player.Idled:Connect(function()
-                virtual_user:CaptureController()
-                virtual_user:ClickButton2(Vector2.new())
-            end)
-        end
-        library:Notify("Anti Afk Enabled!")
-    end,
-    DoubleClick = false,
-    Tooltip = 'Wont disconnect you after 20 minutes',
 })
 
 local frame_timer = tick()
