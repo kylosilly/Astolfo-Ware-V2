@@ -106,6 +106,7 @@ local anti_chest = false
 local auto_mine = false
 local auto_fish = false
 local anti_rare = false
+local no_damage = false
 local anti_key = false
 local inf_jump = false
 local tp_walk = false
@@ -135,6 +136,11 @@ local old; old = hookmetamethod(game, "__namecall", function(self, ...)
 
     if not (auto_mine or auto_fish ) and modify_charge and auto_hit_method == "Hook" and method == "FireServer" and self.Name == "Attack" and not checkcaller() then
         args[1]["Alpha"] = auto_hit_precent
+        return old(self, unpack(args))
+    end
+
+    if no_damage and method == "FireServer" and self.Name == "DamageMe" and not checkcaller() then
+        args[1] = 0
         return old(self, unpack(args))
     end
 
@@ -273,6 +279,30 @@ player_group:AddButton({
     Tooltip = 'This is the main button'
 })
 
+player_group:AddToggle('no_damage', {
+    Text = 'Anti DamageMe',
+    Default = no_damage,
+    Tooltip = 'Wont damage you when drowining etc.',
+
+    Callback = function(Value)
+        no_damage = Value
+    end
+})
+
+player_group:AddToggle('free_clock', {
+    Text = 'Free Clock',
+    Default = false,
+    Tooltip = 'Shows time for free',
+
+    Callback = function(Value)
+        if Value then
+            local_player:WaitForChild("Values"):WaitForChild("_ClockPass").Value = true
+        else
+            local_player:WaitForChild("Values"):WaitForChild("_ClockPass").Value = false
+        end
+    end
+})
+
 player_group:AddDivider()
 
 player_group:AddToggle('inf_jump', {
@@ -386,7 +416,7 @@ farm_group:AddToggle('auto_mine', {
                     replicated_storage:WaitForChild("Events"):WaitForChild("Tools"):WaitForChild("Charge"):FireServer({ Target = mineral, HitPosition = local_player.Character:GetPivot().Position })
                     replicated_storage:WaitForChild("Events"):WaitForChild("Tools"):WaitForChild("Attack"):FireServer({ Alpha = auto_mine_chance, ResponseTime = 0 })
                 end
-                task.wait(local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChildOfClass("Tool"):FindFirstChild("Configuration"):FindFirstChild("Cooldown").Value / 3)
+                task.wait(local_player.Character:FindFirstChildOfClass("Tool") and local_player.Character:FindFirstChildOfClass("Tool"):FindFirstChild("Configuration"):FindFirstChild("Cooldown").Value / 3 or 0)
             until not auto_mine
         end
     end
@@ -646,6 +676,34 @@ misc_item_teleport_group:AddButton({
 })
 
 misc_item_teleport_group:AddButton({
+    Text = 'Bring Chest To Plot',
+    Func = function()
+        for _, v in next, workspace.Grab:GetChildren() do
+            if v:IsA("Model") and v.Name:find("Chest") and v:FindFirstChild("Owner") and v.Owner.Value == local_player and local_player.Character and local_player.Character:FindFirstChild("HumanoidRootPart") then
+                local velocity_connection = run_service.Heartbeat:Connect(function()
+                    local_player.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+                    local_player.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+                end)
+                local to = tween_service:Create(local_player.Character.HumanoidRootPart, TweenInfo.new((v:GetPivot().Position - local_player.Character:GetPivot().Position).magnitude / 100, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = CFrame.new(v:GetPivot().Position) + Vector3.new(0, 5, 0)})
+                to:Play()
+                to.Completed:Wait()
+                if velocity_connection then
+                    velocity_connection:Disconnect()
+                end
+                task.wait(.25)
+                replicated_storage:WaitForChild("Events"):WaitForChild("GrabHandler"):InvokeServer(v.PrimaryPart, "Grab", v:GetPivot().Position)
+                if v:GetAttribute("_Network") == local_player.Name then
+                    v:MoveTo(plot:GetPivot().Position)
+                end
+            end
+        end
+        library:Notify("Done")
+    end,
+    DoubleClick = false,
+    Tooltip = 'Brings chest to plot'
+})
+
+misc_item_teleport_group:AddButton({
     Text = 'Bring Rare Items To Plot',
     Func = function()
         for _, v in next, workspace.Grab:GetChildren() do
@@ -725,14 +783,15 @@ local watermark_connection = run_service.RenderStepped:Connect(function()
 end);
 
 menu_group:AddButton('Unload', function()
-    range_modifier = false
     modify_charge = false
     staff_check = false
     auto_mine = false
     auto_fish = false
+    no_damage = false
     inf_jump = false
     tp_walk = false
     rawset(grab_module, "MaxGrabDistance", 12)
+    local_player:WaitForChild("Values"):WaitForChild("_ClockPass").Value = false
     watermark_connection:Disconnect()
     speed_connection:Disconnect()
     library:Unload()
