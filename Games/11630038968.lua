@@ -31,8 +31,6 @@ end)
 
 task.wait(6)
 
-replicated_storage:WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest"):FireServer("Join For Best Auto Farm Script (ud rat that gives you win and thighs pics): g g / SUTpER4dNc", "All")
-
 if local_player.TeamColor == BrickColor.new("Bright red") then
     library:Notify("Starting Auto Farm!")
     while true do
@@ -52,7 +50,6 @@ if local_player.TeamColor == BrickColor.new("Bright red") then
             end
         end)
         if local_player.PlayerGui.Hotbar.MainFrame.GameEndFrame.Visible then
-            replicated_storage:WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest"):FireServer("gg :3", "All")
             library:Notify("Game Ended, Teleporting To Next Match...")
             connections:Disconnect()
             replicated_storage:WaitForChild("Modules"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("MatchService"):WaitForChild("RF"):WaitForChild("EnterQueue"):InvokeServer("Solo")
@@ -84,7 +81,6 @@ elseif local_player.TeamColor == BrickColor.new("Bright blue") then
             end
         end)
         if local_player.PlayerGui.Hotbar.MainFrame.GameEndFrame.Visible then
-            replicated_storage:WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest"):FireServer("gg :3", "All")
             library:Notify("Game Ended, Teleporting To Next Match...")
             connections:Disconnect()
             replicated_storage:WaitForChild("Modules"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("MatchService"):WaitForChild("RF"):WaitForChild("EnterQueue"):InvokeServer("Solo")
