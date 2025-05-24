@@ -163,23 +163,6 @@ collect_group:AddDropdown('collect_method', {
 
 game_group:AddDivider()
 
-game_group:AddButton({
-    Text = 'Break Server',
-    Func = function()
-        if not local_player.PlayerGui:WaitForChild("GUI"):WaitForChild("MapVoting").Visible then
-            library:Notify("Run this when voting map!")
-            return
-        end
-
-        replicated_storage:WaitForChild("Remotes"):WaitForChild("Client"):WaitForChild("Worlds"):WaitForChild("SendVote"):FireServer("nigga")
-        library:Notify("Server Broken!")
-    end,
-    DoubleClick = false,
-    Tooltip = 'Will be stuck at 0 and new map wont load'
-})
-
-game_group:AddDivider()
-
 game_group:AddDropdown('selected_pin_item', {
     Values = items,
     Default = "",
