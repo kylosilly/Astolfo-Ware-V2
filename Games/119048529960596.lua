@@ -186,7 +186,7 @@ auto_group:AddToggle('auto_put_orders', {
 })
 
 auto_group:AddToggle('auto_give_food', {
-    Text = 'Auto Give Food',
+    Text = 'Auto Give Food [BUGGY]',
     Default = auto_give_food,
     Tooltip = 'Automatically brings food to customers',
 
