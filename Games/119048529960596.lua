@@ -93,7 +93,7 @@ local anti_afk = false
 
 auto_group:AddDivider()
 
-auto_group:AddLabel("Must be near restaurant for features to work!")
+auto_group:AddLabel("Must be near restaurant for features to work!", true)
 
 auto_group:AddDivider()
 
