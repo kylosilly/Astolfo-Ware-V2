@@ -201,13 +201,14 @@ auto_group:AddToggle('auto_give_food', {
                                 replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("GrabFood"):InvokeServer(v)
                                 task.wait()
                             end
+                            task.wait(.5)
                             if v2:IsA("Model") then
                                 replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Name = "Serve", GroupId = tostring(v2.Parent.Name), Tycoon = tycoon, FoodModel = v, CustomerId = tostring(v2.Name) })
                             end
                         end
                     end
                 end
-                task.wait(.5)
+                task.wait()
             until not auto_give_food
         end
     end
