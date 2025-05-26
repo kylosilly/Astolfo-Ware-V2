@@ -186,7 +186,7 @@ auto_group:AddToggle('auto_put_orders', {
 })
 
 auto_group:AddToggle('auto_give_food', {
-    Text = 'Auto Give Food [BUGGY]',
+    Text = 'Auto Give Food',
     Default = auto_give_food,
     Tooltip = 'Automatically brings food to customers',
 
@@ -199,6 +199,7 @@ auto_group:AddToggle('auto_give_food', {
                         for _, v2 in next, client_customers:GetDescendants() do
                             if v:IsA("Model") and not v:GetAttribute("Taken") then
                                 replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("GrabFood"):InvokeServer(v)
+                                task.wait()
                             end
                             if v2:IsA("Model") then
                                 replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Name = "Serve", GroupId = tostring(v2.Parent.Name), Tycoon = tycoon, FoodModel = v, CustomerId = tostring(v2.Name) })
