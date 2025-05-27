@@ -29,6 +29,7 @@ local menu_group = tabs["ui settings"]:AddLeftGroupbox("Menu Settings")
 
 local marketplace_service = game:GetService("MarketplaceService")
 local replicated_storage = game:GetService("ReplicatedStorage")
+local virtual_user = game:GetService("VirtualUser")
 local run_service = game:GetService("RunService")
 local workspace = game:GetService("Workspace")
 local players = game:GetService("Players")
@@ -89,7 +90,7 @@ local auto_order = false
 local auto_bills = false
 local fast_cook = false
 local auto_sit = false
-local anti_afk = false
+local auto_jar = false
 
 auto_group:AddDivider()
 
@@ -113,6 +114,48 @@ auto_group:AddToggle('auto_dirty_dish', {
                 end
                 task.wait(.25)
             until not auto_dirty_dish
+        end
+    end
+})
+
+auto_group:AddToggle('auto_sit', {
+    Text = 'Auto Seat Customers',
+    Default = auto_sit,
+    Tooltip = 'Automatically gives customers a seat',
+
+    Callback = function(Value)
+        auto_sit = Value
+        if Value then
+            repeat
+                for _, v in next, client_customers:GetChildren() do
+                    for _, v2 in next, surface:GetChildren() do
+                        if v2.Name:find("T") and not v2:GetAttribute("InUse") and v:IsA("Folder") then
+                            replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ GroupId = tostring(v.Name), Tycoon = tycoon, Name = "SendToTable", Furniture = v2 })
+                        end
+                    end
+                end
+                task.wait(.25)
+            until not auto_sit
+        end
+    end
+})
+
+auto_group:AddToggle('auto_jar', {
+    Text = 'Auto Collect Tip Jar',
+    Default = auto_jar,
+    Tooltip = 'Collects tip jars',
+
+    Callback = function(Value)
+        auto_jar = Value
+        if Value then
+            repeat
+                for _, v in next, furniture:GetDescendants() do
+                    if v.Name:find("Jar") and v.Parent:GetAttribute("Value") > 0 then
+                        replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TipsCollected"):FireServer(tycoon)
+                    end
+                end
+                task.wait(.25)
+            until not auto_jar
         end
     end
 })
@@ -212,28 +255,6 @@ auto_group:AddToggle('auto_give_food', {
     end
 })
 
-auto_group:AddToggle('auto_sit', {
-    Text = 'Auto Seat Customers',
-    Default = auto_sit,
-    Tooltip = 'Automatically gives customers a seat',
-
-    Callback = function(Value)
-        auto_sit = Value
-        if Value then
-            repeat
-                for _, v in next, client_customers:GetChildren() do
-                    for _, v2 in next, surface:GetChildren() do
-                        if v2.Name:find("T") and not v2:GetAttribute("InUse") and v:IsA("Folder") then
-                            replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ GroupId = tostring(v.Name), Tycoon = tycoon, Name = "SendToTable", Furniture = v2 })
-                        end
-                    end
-                end
-                task.wait(.25)
-            until not auto_sit
-        end
-    end
-})
-
 auto_group:AddToggle('instant_food', {
     Text = 'Auto Make Food',
     Default = instant_food,
@@ -244,7 +265,7 @@ auto_group:AddToggle('instant_food', {
         if Value then
             repeat
                 for _, v in next, surface:GetDescendants() do
-                    if v.Name:find("Oven") and local_player.PlayerGui:FindFirstChild("Cooking") and local_player.PlayerGui.Cooking:FindFirstChild("Frame") and local_player.PlayerGui.Cooking.Frame.Visible then
+                    if v.Name:find("Oven") then
                         replicated_storage:WaitForChild("Events"):WaitForChild("Cook"):WaitForChild("CookInputRequested"):FireServer("Interact", v.Parent, "Oven") -- this might not always be accurate to all ovens maybe idk
                     end
                 end
@@ -256,23 +277,28 @@ auto_group:AddToggle('instant_food', {
 
 player_group:AddDivider()
 
-player_group:AddToggle('anti_afk', {
+player_group:AddButton({
     Text = 'Anti Afk',
-    Default = anti_afk,
-    Tooltip = 'Wont disconnect you after 20 minutes',
-
-    Callback = function(Value)
-        anti_afk = Value
-        if Value then
+    Func = function()
+        if get_gc then
             for _, v in next, get_gc(local_player.Idled) do
-                if anti_afk and v["Disable"] then
+                if v["Disable"] then
                     v["Disable"](v)
-                elseif anti_afk and v["Disconnect"] then
+                elseif v["Disconnect"] then
                     v["Disconnect"](v)
                 end
             end
+        else
+            if local_player and virtual_user then
+                local_player.Idled:Connect(function()
+                    virtual_user:CaptureController()
+                    virtual_user:ClickButton2(Vector2.new())
+                end)
+            end
         end
-    end
+    end,
+    DoubleClick = false,
+    Tooltip = 'Wont disconnect you after 20 minutes'
 })
 
 player_group:AddButton({
@@ -332,7 +358,7 @@ menu_group:AddButton('Unload', function()
     auto_bills = false
     fast_cook = false
     auto_sit = false
-    anti_afk = false
+    auto_jar = false
     watermark_connection:Disconnect()
     library:Unload()
 end)
