@@ -111,7 +111,7 @@ auto_group:AddToggle('auto_dirty_dish', {
                         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Tycoon = tycoon, Name = "CollectDishes", FurnitureModel = v.Parent.Parent })
                     end
                 end
-                task.wait(.5)
+                task.wait(.25)
             until not auto_dirty_dish
         end
     end
@@ -131,7 +131,7 @@ auto_group:AddToggle('auto_bills', {
                         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Tycoon = tycoon, Name = "CollectBill", FurnitureModel = v.Parent })
                     end
                 end
-                task.wait(.5)
+                task.wait(.25)
             until not auto_bills
         end
     end
@@ -151,7 +151,7 @@ auto_group:AddToggle('auto_order', {
                         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ GroupId = tostring(v.Parent.Name), Tycoon = tycoon, Name = "TakeOrder", CustomerId = tostring(v.Name) })
                     end
                 end
-                task.wait(.5)
+                task.wait(.25)
             until not auto_order
         end
     end
@@ -179,7 +179,7 @@ auto_group:AddToggle('auto_put_orders', {
                         end
                     end
                 end
-                task.wait(.5)
+                task.wait(.25)
             until not auto_put_orders
         end
     end
@@ -194,17 +194,19 @@ auto_group:AddToggle('auto_give_food', {
         auto_give_food = Value
         if Value then
             repeat
-                for _, v in next, food:GetChildren() do
-                    for _, v2 in next, client_customers:GetDescendants() do
-                        if v2:IsA("Model") and v:GetAttribute("Taken") then
-                            replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Name = "Serve", GroupId = tostring(v2.Parent.Name), Tycoon = tycoon, FoodModel = v, CustomerId = tostring(v2.Name) })
+                if #food:GetChildren() > 0 then
+                    for _, v in next, food:GetChildren() do
+                        for _, v2 in next, client_customers:GetDescendants() do
+                            if v2:IsA("Model") and v:GetAttribute("Taken") then
+                                replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Name = "Serve", GroupId = tostring(v2.Parent.Name), Tycoon = tycoon, FoodModel = v, CustomerId = tostring(v2.Name) })
+                            end
+                        end
+                        if not v:GetAttribute("Taken") then
+                            replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("GrabFood"):InvokeServer(v)
                         end
                     end
-                    if not v:GetAttribute("Taken") then
-                        replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("GrabFood"):InvokeServer(v)
-                    end
                 end
-                task.wait(.1)
+                task.wait(.25)
             until not auto_give_food
         end
     end
@@ -226,7 +228,7 @@ auto_group:AddToggle('auto_sit', {
                         end
                     end
                 end
-                task.wait(.5)
+                task.wait(.25)
             until not auto_sit
         end
     end
@@ -242,11 +244,11 @@ auto_group:AddToggle('instant_food', {
         if Value then
             repeat
                 for _, v in next, surface:GetDescendants() do
-                    if v.Name:find("Oven") then
+                    if v.Name:find("Oven") and local_player.PlayerGui:FindFirstChild("Cooking") and local_player.PlayerGui.Cooking:FindFirstChild("Frame") and local_player.PlayerGui.Cooking.Frame.Visible then
                         replicated_storage:WaitForChild("Events"):WaitForChild("Cook"):WaitForChild("CookInputRequested"):FireServer("Interact", v.Parent, "Oven") -- this might not always be accurate to all ovens maybe idk
                     end
                 end
-                task.wait(.5)
+                task.wait(.25)
             until not instant_food
         end
     end
