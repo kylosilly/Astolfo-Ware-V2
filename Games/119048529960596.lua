@@ -112,7 +112,7 @@ auto_group:AddToggle('auto_dirty_dish', {
                         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Tycoon = tycoon, Name = "CollectDishes", FurnitureModel = v.Parent.Parent })
                     end
                 end
-                task.wait(.25)
+                task.wait(.5)
             until not auto_dirty_dish
         end
     end
@@ -134,7 +134,7 @@ auto_group:AddToggle('auto_sit', {
                         end
                     end
                 end
-                task.wait(.25)
+                task.wait(.5)
             until not auto_sit
         end
     end
@@ -154,7 +154,7 @@ auto_group:AddToggle('auto_jar', {
                         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TipsCollected"):FireServer(tycoon)
                     end
                 end
-                task.wait(.25)
+                task.wait(.5)
             until not auto_jar
         end
     end
@@ -174,7 +174,7 @@ auto_group:AddToggle('auto_bills', {
                         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Tycoon = tycoon, Name = "CollectBill", FurnitureModel = v.Parent })
                     end
                 end
-                task.wait(.25)
+                task.wait(.5)
             until not auto_bills
         end
     end
@@ -194,7 +194,7 @@ auto_group:AddToggle('auto_order', {
                         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ GroupId = tostring(v.Parent.Name), Tycoon = tycoon, Name = "TakeOrder", CustomerId = tostring(v.Name) })
                     end
                 end
-                task.wait(.25)
+                task.wait(.5)
             until not auto_order
         end
     end
@@ -222,7 +222,7 @@ auto_group:AddToggle('auto_put_orders', {
                         end
                     end
                 end
-                task.wait(.25)
+                task.wait(.5)
             until not auto_put_orders
         end
     end
@@ -249,7 +249,7 @@ auto_group:AddToggle('auto_give_food', {
                         end
                     end
                 end
-                task.wait(.25)
+                task.wait(.5)
             until not auto_give_food
         end
     end
@@ -269,7 +269,7 @@ auto_group:AddToggle('instant_food', {
                         replicated_storage:WaitForChild("Events"):WaitForChild("Cook"):WaitForChild("CookInputRequested"):FireServer("Interact", v.Parent, "Oven") -- this might not always be accurate to all ovens maybe idk
                     end
                 end
-                task.wait(.25)
+                task.wait(.5)
             until not instant_food
         end
     end
