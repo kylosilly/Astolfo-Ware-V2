@@ -211,13 +211,10 @@ auto_group:AddToggle('auto_put_orders', {
         if Value then
             repeat
                 for _, v in next, surface:GetDescendants() do
-                    if v.Name:find("Order Counter") and v.Parent.Parent:GetAttribute("InUse") then
+                    if v.Name:find("Order") and v.Parent.Parent:GetAttribute("InUse") then
                         for _, v2 in next, temp:GetDescendants() do
                             if v2:IsA("ProximityPrompt") then
-                                local order = v2
-                                if order then
-                                    replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("Interactions"):WaitForChild("Interacted"):FireServer(tycoon, { WorldPosition = v.Parent.Parent:GetPivot().Position, Model = v.Parent.Parent, ActionText = "Cook", InteractionType = "OrderCounter", Part = v.Parent, Prompt = v, TemporaryPart = v.Parent, Id = v.Name })
-                                end
+                                replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("Interactions"):WaitForChild("Interacted"):FireServer(tycoon, { WorldPosition = v.Parent.Parent:GetPivot().Position, Model = v.Parent.Parent, ActionText = "Cook", InteractionType = "OrderCounter", Part = v.Parent, Prompt = v, TemporaryPart = v.Parent, Id = v.Name })
                             end
                         end
                     end
@@ -294,6 +291,7 @@ player_group:AddButton({
                 virtual_user:ClickButton2(Vector2.new())
             end)
         end
+        library:Notify("Anti Afk Enabled!")
     end,
     DoubleClick = false,
     Tooltip = 'Wont disconnect you after 20 minutes'
@@ -323,9 +321,10 @@ misc_group:AddButton({
                 v.Parent:Destroy()
             end
         end
+        library:Notify("Waypoints Destroyed")
     end,
     DoubleClick = false,
-    Tooltip = 'Destroys annyoing waypoints'
+    Tooltip = 'Destroys annoying waypoints'
 })
 
 local frame_timer = tick()
