@@ -40,7 +40,7 @@ local local_player = players.LocalPlayer
 
 local tycoon = nil
 
-for _, v in next, workspace:WaitForChild("Tycoons"):GetDescendants() do
+for _, v in next, workspace:FindFirstChild("Tycoons"):GetDescendants() do
     if v.Name == "Player" and v.Value == local_player then
         tycoon = v.Parent
     end
@@ -50,32 +50,32 @@ if not tycoon then
     local_player:Kick("Player restaurant not found!")
 end
 
-local client_customers = tycoon:WaitForChild("ClientCustomers")
+local client_customers = tycoon:FindFirstChild("ClientCustomers")
 
 if not client_customers then
     local_player:Kick("Client Customers folder not found!")
 end
 
-local items = tycoon:WaitForChild("Items")
+local items = tycoon:FindFirstChild("Items")
 
 if not items then
     local_player:Kick("Items folder not found!")
 end
 
-local food = tycoon:WaitForChild("Objects"):WaitForChild("Food")
+local food = tycoon:FindFirstChild("Objects"):FindFirstChild("Food")
 
 if not food then
     local_player:Kick("Food folder not found!")
 end
 
-local furniture = items:WaitForChild("Furniture")
-local surface = items:WaitForChild("Surface")
+local furniture = items:FindFirstChild("Furniture")
+local surface = items:FindFirstChild("Surface")
 
 if not (furniture and surface) then
     local_player:Kick("???")
 end
 
-local temp = workspace:WaitForChild("Temp")
+local temp = workspace:FindFirstChild("Temp")
 
 if not temp then
     local_player:Kick("Temp folder not found!")
@@ -194,20 +194,17 @@ auto_group:AddToggle('auto_give_food', {
         auto_give_food = Value
         if Value then
             repeat
-                if #food:GetChildren() > 0 then
-                    for _, v in next, food:GetChildren() do
-                        for _, v2 in next, client_customers:GetDescendants() do
-                            if v:IsA("Model") and not v:GetAttribute("Taken") then
-                                replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("GrabFood"):InvokeServer(v)
-                                task.wait()
-                            end
-                            if v2:IsA("Model") then
-                                replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Name = "Serve", GroupId = tostring(v2.Parent.Name), Tycoon = tycoon, FoodModel = v, CustomerId = tostring(v2.Name) })
-                            end
+                for _, v in next, food:GetChildren() do
+                    for _, v2 in next, client_customers:GetDescendants() do
+                        if v2:IsA("Model") and v:GetAttribute("Taken") then
+                            replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Name = "Serve", GroupId = tostring(v2.Parent.Name), Tycoon = tycoon, FoodModel = v, CustomerId = tostring(v2.Name) })
                         end
                     end
+                    if not v:GetAttribute("Taken") then
+                        replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("GrabFood"):InvokeServer(v)
+                    end
                 end
-                task.wait(.5)
+                task.wait(.1)
             until not auto_give_food
         end
     end
@@ -274,6 +271,20 @@ player_group:AddToggle('anti_afk', {
             end
         end
     end
+})
+
+player_group:AddButton({
+    Text = 'Claim Daily Reward',
+    Func = function()
+        if not tycoon:FindFirstChild("Default"):FindFirstChild("DailyRewards") then
+            library:Notify("Already Claimed")
+            return
+        end
+        replicated_storage:WaitForChild("Events"):WaitForChild("DailyRewards"):WaitForChild("DailyRewardClaimed"):FireServer()
+        library:Notify("Claimed Daily Reward")
+    end,
+    DoubleClick = false,
+    Tooltip = 'Claims daily reward gift'
 })
 
 misc_group:AddDivider()
