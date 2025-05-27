@@ -289,12 +289,10 @@ player_group:AddButton({
                 end
             end
         else
-            if local_player and virtual_user then
-                local_player.Idled:Connect(function()
-                    virtual_user:CaptureController()
-                    virtual_user:ClickButton2(Vector2.new())
-                end)
-            end
+            local_player.Idled:Connect(function()
+                virtual_user:CaptureController()
+                virtual_user:ClickButton2(Vector2.new())
+            end)
         end
     end,
     DoubleClick = false,
