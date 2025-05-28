@@ -54,7 +54,7 @@ end
 local client_customers = tycoon:FindFirstChild("ClientCustomers")
 
 if not client_customers then
-    local_player:Kick("Client Customers folder not found!")
+    local_player:Kick("Load in your tycoon first fully!")
 end
 
 local items = tycoon:FindFirstChild("Items")
@@ -88,6 +88,7 @@ local auto_give_food = false
 local instant_food = false
 local auto_order = false
 local auto_bills = false
+local auto_claim = false
 local fast_cook = false
 local auto_sit = false
 local auto_jar = false
@@ -112,7 +113,7 @@ auto_group:AddToggle('auto_dirty_dish', {
                         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Tycoon = tycoon, Name = "CollectDishes", FurnitureModel = v.Parent.Parent })
                     end
                 end
-                task.wait(.5)
+                task.wait()
             until not auto_dirty_dish
         end
     end
@@ -134,7 +135,7 @@ auto_group:AddToggle('auto_sit', {
                         end
                     end
                 end
-                task.wait(.5)
+                task.wait(1)
             until not auto_sit
         end
     end
@@ -154,7 +155,7 @@ auto_group:AddToggle('auto_jar', {
                         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TipsCollected"):FireServer(tycoon)
                     end
                 end
-                task.wait(.5)
+                task.wait()
             until not auto_jar
         end
     end
@@ -174,7 +175,7 @@ auto_group:AddToggle('auto_bills', {
                         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Tycoon = tycoon, Name = "CollectBill", FurnitureModel = v.Parent })
                     end
                 end
-                task.wait(.5)
+                task.wait()
             until not auto_bills
         end
     end
@@ -200,6 +201,34 @@ auto_group:AddToggle('auto_order', {
     end
 })
 
+auto_group:AddToggle('auto_claim', {
+    Text = 'Auto Claim Food',
+    Default = auto_claim,
+    Tooltip = 'Auto collects food after done with reward',
+
+    Callback = function(Value)
+        auto_claim = Value
+        if Value then
+            repeat
+                if local_player.PlayerGui:FindFirstChild("Objectives"):FindFirstChild("Frame"):FindFirstChild("CollectRewardButton").Visible then
+                    replicated_storage:WaitForChild("Events"):WaitForChild("Rewards"):WaitForChild("RewardRequested"):FireServer()
+                end
+                task.wait(2)
+                if local_player.PlayerGui:FindFirstChild("SelectReward"):FindFirstChild("Frame").Visible then
+                    for _, v in next, local_player.PlayerGui.SelectReward.Frame:FindFirstChild("List"):GetDescendants() do
+                        if v:IsA("ImageButton") then
+                            for _, v2 in next, (getconnections(v.MouseButton1Click)) do
+                                v2:Fire()
+                            end
+                        end
+                    end
+                end
+                task.wait()
+            until not auto_claim
+        end
+    end
+})
+
 -- you can also just fire proximityprompt in temp but i decided to take the long way ahdhasdhashdahsda
 auto_group:AddToggle('auto_put_orders', {
     Text = 'Auto Put Orders',
@@ -210,11 +239,13 @@ auto_group:AddToggle('auto_put_orders', {
         auto_put_orders = Value
         if Value then
             repeat
-                for _, v in next, surface:GetDescendants() do
-                    if v.Name:find("Order") and v.Parent.Parent:GetAttribute("InUse") then
-                        for _, v2 in next, temp:GetDescendants() do
-                            if v2:IsA("ProximityPrompt") then
-                                replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("Interactions"):WaitForChild("Interacted"):FireServer(tycoon, { WorldPosition = v.Parent.Parent:GetPivot().Position, Model = v.Parent.Parent, ActionText = "Cook", InteractionType = "OrderCounter", Part = v.Parent, Prompt = v, TemporaryPart = v.Parent, Id = v.Name })
+                if #temp:GetChildren() > 0 then
+                    for _, v in next, surface:GetDescendants() do
+                        if v.Name:find("Order") and v.Parent.Parent:GetAttribute("InUse") then
+                            for _, v2 in next, temp:GetDescendants() do
+                                if v2:IsA("ProximityPrompt") then
+                                    replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("Interactions"):WaitForChild("Interacted"):FireServer(tycoon, { WorldPosition = v.Parent.Parent:GetPivot().Position, Model = v.Parent.Parent, ActionText = "Cook", InteractionType = "OrderCounter", Part = v.Parent, Prompt = v, TemporaryPart = v.Parent, Id = v.Name })
+                                end
                             end
                         end
                     end
@@ -235,6 +266,7 @@ auto_group:AddToggle('auto_give_food', {
         if Value then
             repeat
                 if #food:GetChildren() > 0 then
+                    task.wait(.1)
                     for _, v in next, food:GetChildren() do
                         for _, v2 in next, client_customers:GetDescendants() do
                             if v2:IsA("Model") and v:GetAttribute("Taken") then
@@ -246,7 +278,7 @@ auto_group:AddToggle('auto_give_food', {
                         end
                     end
                 end
-                task.wait(.5)
+                task.wait()
             until not auto_give_food
         end
     end
@@ -327,6 +359,18 @@ misc_group:AddButton({
     Tooltip = 'Destroys annoying waypoints'
 })
 
+misc_group:AddButton({
+    Text = 'Destroy Leftover Cooking Resources',
+    Func = function()
+        for _, v in next, tycoon.Objects.CookingResources[local_player.Name]:GetChildren() do
+            v:Destroy()
+        end
+        library:Notify("Leftover Cooking Resources Destroyed")
+    end,
+    DoubleClick = false,
+    Tooltip = 'Delete leftover cooking resources'
+})
+
 local frame_timer = tick()
 local frame_counter = 0;
 local fps = 60;
@@ -353,6 +397,7 @@ menu_group:AddButton('Unload', function()
     instant_food = false
     auto_order = false
     auto_bills = false
+    auto_claim = false
     fast_cook = false
     auto_sit = false
     auto_jar = false
