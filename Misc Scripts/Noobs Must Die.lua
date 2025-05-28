@@ -9,7 +9,7 @@ local theme_manager = loadstring(game:HttpGet(repo .. 'Gui%20Lib%20%5BThemeManag
 local save_manager = loadstring(game:HttpGet(repo .. 'Gui%20Lib%20%5BSaveManager%5D'))()
 
 local window = library:CreateWindow({
-    Title = "Astolfo Ware | Made By @kylosilly | discord.gg/SUTpER4dNc",
+    Title = "This Mango Gui Boii",
     Center = true,
     AutoShow = true,
     TabPadding = 8,
@@ -110,6 +110,21 @@ combat_group:AddSlider('kill_aura_distance', {
     Callback = function(Value)
         kill_aura_distance = Value
     end
+})
+
+combat_group:AddDivider()
+
+combat_group:AddButton({
+    Text = 'Give Everyone Windforce',
+    Func = function()
+        for _, v in next, players:GetPlayers() do
+            if local_player.Character and v.Character then
+                replicated_storage:WaitForChild("PlrMan"):WaitForChild("SkillUtil"):WaitForChild("ReplicatePlrBullet"):FireServer(v.Character:GetPivot().Position, vector.create(-0, -0, -1), "Windforce", v.Character)
+            end
+        end
+    end,
+    DoubleClick = false,
+    Tooltip = 'Gives everyone windforce'
 })
 
 game_group:AddDivider()
