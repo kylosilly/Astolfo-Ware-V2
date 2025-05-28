@@ -113,7 +113,7 @@ auto_group:AddToggle('auto_dirty_dish', {
                         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Tycoon = tycoon, Name = "CollectDishes", FurnitureModel = v.Parent.Parent })
                     end
                 end
-                task.wait()
+                task.wait(.25)
             until not auto_dirty_dish
         end
     end
@@ -155,7 +155,7 @@ auto_group:AddToggle('auto_jar', {
                         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TipsCollected"):FireServer(tycoon)
                     end
                 end
-                task.wait()
+                task.wait(.25)
             until not auto_jar
         end
     end
@@ -175,7 +175,7 @@ auto_group:AddToggle('auto_bills', {
                         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Tycoon = tycoon, Name = "CollectBill", FurnitureModel = v.Parent })
                     end
                 end
-                task.wait()
+                task.wait(.25)
             until not auto_bills
         end
     end
@@ -223,7 +223,7 @@ auto_group:AddToggle('auto_claim', {
                         end
                     end
                 end
-                task.wait()
+                task.wait(1)
             until not auto_claim
         end
     end
@@ -278,7 +278,7 @@ auto_group:AddToggle('auto_give_food', {
                         end
                     end
                 end
-                task.wait()
+                task.wait(.25)
             until not auto_give_food
         end
     end
