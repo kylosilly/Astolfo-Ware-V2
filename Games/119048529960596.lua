@@ -1,4 +1,4 @@
--- uhm..............................?????
+-- uhm..............................????? (thx ! nfpw for helping me with stuff <3)
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
@@ -94,6 +94,7 @@ local auto_order = false
 local auto_bill = false
 local auto_cook = false
 local auto_seat = false
+local auto_tip = false
 
 local toggle_delay = 0.1
 
@@ -260,6 +261,7 @@ auto_group:AddToggle('auto_cook', {
                     oven = v.Parent
                     break
                 end
+                if oven then break end
             end
             repeat
                 if oven then
@@ -317,6 +319,7 @@ menu_group:AddButton('Unload', function()
     auto_bill = false
     auto_cook = false
     auto_seat = false
+    auto_tip = false
     watermark_connection:Disconnect()
     library:Unload()
 end)
