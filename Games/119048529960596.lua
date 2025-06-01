@@ -19,16 +19,15 @@ local window = library:CreateWindow({
 
 local tabs = {
     main = window:AddTab("Main"),
+    misc = window:AddTab("Misc"),
     ["ui settings"] = window:AddTab("UI Settings")
 }
 
 local auto_group = tabs.main:AddLeftGroupbox("Auto Stuff")
 local auto_settings_group = tabs.main:AddRightGroupbox("Auto Settings")
---[[
-local player_group = tabs.main:AddRightGroupbox("Player Settings")
-local misc_group = tabs.main:AddLeftGroupbox("Misc Settings")
-local restaurant_group = tabs.main:AddRightGroupbox("Restaurant Settings")
-]]
+local food_group = tabs.main:AddRightGroupbox("Food Settings")
+local teleport_group = tabs.misc:AddLeftGroupbox("Teleport Settings")
+local player_group = tabs.misc:AddRightGroupbox("Player Settings")
 local menu_group = tabs["ui settings"]:AddLeftGroupbox("Menu Settings")
 
 local marketplace_service = game:GetService("MarketplaceService")
@@ -43,6 +42,10 @@ local stats = game:GetService("Stats")
 local info = marketplace_service:GetProductInfo(game.PlaceId)
 local get_gc = getconnections or get_signal_cons
 local local_player = players.LocalPlayer
+
+if not get_gc then
+    local_player:Kick("Exploit not supported!")
+end
 
 local tycoon = nil
 
@@ -87,6 +90,18 @@ if not temp then
     local_player:Kick("Temp folder not found!")
 end
 
+local buildings = workspace:FindFirstChild("Exteriors")
+
+if not buildings then
+    local_player:Kick("Buildings folder not found!")
+end
+
+local ingredient_module = require(replicated_storage:FindFirstChild("Source"):FindFirstChild("Data"):FindFirstChild("Food"):FindFirstChild("IngredientData"))
+
+if not ingredient_module then
+    local_player:Kick("Couldnt retrieve ingredients!")
+end
+
 local auto_dirty_dish = false
 local auto_give_food = false
 local auto_do_order = false
@@ -97,6 +112,26 @@ local auto_seat = false
 local auto_tip = false
 
 local toggle_delay = 0.1
+
+local selected_place = ""
+local selected_food = ""
+
+local building_names = {}
+local ingredients = {}
+
+for _, v in next, ingredient_module do
+    for i, v2 in next, v do
+        if i == "DisplayName" then
+            table.insert(ingredients, v2)
+        end
+    end
+end
+
+for _, v in next, buildings:GetChildren() do
+    table.insert(building_names, v.Name)
+end
+
+table.insert(building_names, "Tycoon")
 
 surface.DescendantAdded:Connect(function(v)
     task.wait(1)
@@ -240,9 +275,9 @@ auto_group:AddToggle('auto_do_order', {
         if Value then
             repeat
                 if #temp:GetChildren() > 0 then
-                    for _, v in next, temp:GetChildren() do
-                        if v:IsA("Part") and v:FindFirstChildOfClass("ProximityPrompt") then
-                            fireproximityprompt(v:FindFirstChildOfClass("ProximityPrompt"))
+                    for _, v in next, temp:GetDescendants() do
+                        if v:IsA("ProximityPrompt") then
+                            fireproximityprompt(v)
                             task.wait()
                         end
                     end
@@ -279,6 +314,8 @@ auto_group:AddToggle('auto_cook', {
     end
 })
 
+auto_settings_group:AddDivider()
+
 auto_settings_group:AddSlider('toggle_delay', {
     Text = 'Toggle Repeat Delay',
     Default = toggle_delay,
@@ -293,6 +330,87 @@ auto_settings_group:AddSlider('toggle_delay', {
             library:Notify("0 Is Not Recommended As It May Cause Lag")
         end
     end
+})
+
+food_group:AddDivider()
+
+food_group:AddDropdown('selected_food', {
+    Values = ingredients,
+    Default = selected_food,
+    Multi = false,
+
+    Text = 'Select Ingredient To Buy:',
+    Tooltip = 'Buys the Ingredient you picked when you press the button',
+
+    Callback = function(Value)
+        selected_food = Value
+    end
+})
+
+food_group:AddButton({
+    Text = 'Buy Ingredient',
+    Func = function()
+        if selected_food ~= "" then
+            replicated_storage:WaitForChild("Events"):WaitForChild("Food"):WaitForChild("PurchaseIngredientRequested"):FireServer(tycoon, tostring(selected_food))
+            library:Notify("Bought "..selected_food)    
+        else
+            library:Notify("Please select an ingredient")
+        end
+    end
+})
+
+teleport_group:AddDivider()
+
+teleport_group:AddDropdown('selected_place', {
+    Values = building_names,
+    Default = selected_place,
+    Multi = false,
+
+    Text = 'Select Place To Teleport To:',
+    Tooltip = 'Teleports to the place you picked when you press the butto',
+
+    Callback = function(Value)
+        selected_place = Value
+    end
+})
+
+teleport_group:AddButton({
+    Text = 'Teleport To Selected Place',
+    Func = function()
+        if selected_place == "" then
+            library:Notify("Please select a place")
+            return
+        end
+
+        if selected_place == "Tycoon" then
+            local_player.Character:SetPrimaryPartCFrame(tycoon:FindFirstChild("Locations"):FindFirstChild("DefaultWalkPoint").Value)
+        elseif selected_place == "FishShop" then
+            local_player.Character:MoveTo(buildings[selected_place]:FindFirstChild("FishmongerNPC"):GetPivot().Position)
+        elseif not (selected_place == "Tycoon" or selected_place == "FishShop") then
+            replicated_storage:WaitForChild("Events"):WaitForChild("Teleports"):WaitForChild("RequestTeleport"):InvokeServer(selected_place.."Interior")
+        end
+        library:Notify("Teleported to "..selected_place)
+    end,
+    DoubleClick = false,
+    Tooltip = 'Teleports you to selected place'
+})
+
+player_group:AddDivider()
+
+player_group:AddButton({
+    Text = 'Anti Afk',
+    Func = function()
+        for _, v in next, get_gc(local_player.Idled) do
+            if v["Disable"] then
+                v["Disable"](v)
+            elseif v["Disconnect"] then
+                v["Disconnect"](v)
+            end
+        end
+        library:Notify("Anti Afk Enabled!")
+    end,
+    DoubleClick = false,
+    Tooltip = 'Wont disconnect you after 20 minutes'
 })
 
 local frame_timer = tick()
