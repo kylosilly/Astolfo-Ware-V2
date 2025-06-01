@@ -102,10 +102,12 @@ surface.DescendantAdded:Connect(function(v)
     task.wait(1)
     if auto_dirty_dish and v.Name == "Trash" and v:GetAttribute("Taken") then
         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Tycoon = tycoon, Name = "CollectDishes", FurnitureModel = v.Parent.Parent })
+        task.wait()
     end
 
     if auto_bill and v.Name == "Bill" then
         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Tycoon = tycoon, Name = "CollectBill", FurnitureModel = v.Parent })
+        task.wait()
     end
 end)
 
@@ -125,8 +127,10 @@ auto_group:AddToggle('auto_order', {
         if Value then
             repeat
                 for _, v in next, local_player.PlayerGui:GetDescendants() do
-                    if v:IsA("ImageLabel") and v.Visible and v.Parent and v.Parent.Parent.Parent.Name == "CustomerSpeechUI" then
-                        replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ GroupId = tostring(v.Parent.Parent.Parent.Adornee.Parent.Parent.Name), Tycoon = tycoon, Name = "TakeOrder", CustomerId = tostring(v.Parent.Parent.Parent.Adornee.Parent.Name) })
+                    if v:IsA("ImageLabel") and v.Visible and v.Parent.Parent.Parent.Name == "CustomerSpeechUI" and v.Parent.Parent.Size == UDim2.new(1, 0, 1, 0) then
+                        local group = v.Parent.Parent.Parent.Adornee.Parent.Parent.Name
+                        local customer = v.Parent.Parent.Parent.Adornee.Parent.Name
+                        replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ GroupId = tostring(group), Tycoon = tycoon, Name = "TakeOrder", CustomerId = tostring(customer) })
                         task.wait()
                     end
                 end
@@ -163,10 +167,11 @@ auto_group:AddToggle('auto_seat', {
         if Value then
             repeat
                 for _, v in next, local_player.PlayerGui:GetDescendants() do
-                    if v:IsA("TextLabel") and v.Text:find("table") and v.Parent and v.Parent.Parent.Parent.Name == "CustomerSpeechUI" then
+                    if v:IsA("TextLabel") and v.Text:find("table") and v.Parent.Parent.Parent.Name == "CustomerSpeechUI" and v.Parent.Parent.Size == UDim2.new(1, 0, 1, 0) then
                         for _, v2 in next, surface:GetChildren() do
                             if v2.Name:find("T") and not v2:GetAttribute("InUse") then
-                                replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ GroupId = tostring(v.Parent.Parent.Parent.Adornee.Parent.Parent.Name), Tycoon = tycoon, Name = "SendToTable", FurnitureModel = v2 })
+                                local group = v.Parent.Parent.Parent.Adornee.Parent.Parent.Name
+                                replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ GroupId = tostring(group), Tycoon = tycoon, Name = "SendToTable", FurnitureModel = v2 })
                                 task.wait()
                             end
                         end
@@ -204,16 +209,17 @@ auto_group:AddToggle('auto_give_food', {
         auto_give_food = Value
         if Value then
             repeat
-                if #food:GetChildren() > 0 and #client_customers:GetChildren() > 0 then
+                if #food:GetChildren() > 0 then
                     for _, v in next, food:GetChildren() do
-                        for _, v2 in next, local_player.PlayerGui:GetDescendants() do
-                            if not v:GetAttribute("Taken") then
-                                replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("GrabFood"):InvokeServer(v)
-                                task.wait()
-                            end
-                            if v2:IsA("ImageLabel") and v2.Visible and v2.Parent and v2.Parent.Parent.Parent.Name == "CustomerSpeechUI" then
-                                replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Name = "Serve", GroupId = tostring(v2.Parent.Parent.Parent.Adornee.Parent.Parent.Name), Tycoon = tycoon, FoodModel = v, CustomerId = tostring(v2.Parent.Parent.Parent.Adornee.Parent.Name) })
-                                task.wait()
+                        if not v:GetAttribute("Taken") then
+                            replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("GrabFood"):InvokeServer(v)
+                            for _, v2 in next, local_player.PlayerGui:GetDescendants() do
+                                if v2:IsA("ImageLabel") and v2.Visible and v2.Parent.Parent.Parent.Name == "CustomerSpeechUI" and v2.Parent.Parent.Size == UDim2.new(1, 0, 1, 0) then
+                                    local group = v2.Parent.Parent.Parent.Adornee.Parent.Parent.Name
+                                    local customer = v2.Parent.Parent.Parent.Adornee.Parent.Name
+                                    replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Name = "Serve", GroupId = tostring(group), Tycoon = tycoon, FoodModel = v, CustomerId = tostring(customer) })
+                                    task.wait()
+                                end
                             end
                         end
                     end
@@ -261,14 +267,11 @@ auto_group:AddToggle('auto_cook', {
                     oven = v.Parent
                     break
                 end
-                if oven then break end
             end
             repeat
                 if oven then
                     replicated_storage:WaitForChild("Events"):WaitForChild("Cook"):WaitForChild("CookInputRequested"):FireServer("Interact", oven, "Oven")
-                elseif not oven then
-                    library:Notify("No Oven Found")
-                    return
+                    task.wait()
                 end
                 task.wait(toggle_delay)
             until not auto_cook
