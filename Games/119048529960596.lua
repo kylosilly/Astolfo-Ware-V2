@@ -26,6 +26,7 @@ local tabs = {
 local auto_group = tabs.main:AddLeftGroupbox("Auto Stuff")
 local auto_settings_group = tabs.main:AddRightGroupbox("Auto Settings")
 local food_group = tabs.main:AddRightGroupbox("Food Settings")
+local npc_group = tabs.main:AddRightGroupbox("NPC Settings")
 local teleport_group = tabs.misc:AddLeftGroupbox("Teleport Settings")
 local player_group = tabs.misc:AddRightGroupbox("Player Settings")
 local menu_group = tabs["ui settings"]:AddLeftGroupbox("Menu Settings")
@@ -102,19 +103,26 @@ if not ingredient_module then
     local_player:Kick("Ingredient module not found!")
 end
 
-local auto_dirty_dish = false
-local auto_give_food = false
-local auto_do_order = false
-local auto_order = false
-local auto_bill = false
-local auto_cook = false
-local auto_seat = false
-local auto_tip = false
+local path_utility = require(replicated_storage:FindFirstChild("Source"):FindFirstChild("Utility"):FindFirstChild("NPC"):FindFirstChild("PathUtility"))
 
-local toggle_delay = 0.1
+if not path_utility then
+    local_player:Kick("Path utility not found!")
+end
 
-local selected_place = ""
-local selected_food = ""
+getgenv().settings = {
+    auto_dirty_dish = false,
+    auto_give_food = false,
+    auto_do_order = false,
+    auto_order = false,
+    auto_bill = false,
+    auto_cook = false,
+    auto_seat = false,
+    fast_npcs = false,
+    auto_tip = false,
+    toggle_delay = 0.1,
+    selected_place = "",
+    selected_food = "",
+}
 
 local building_names = {}
 local ingredients = {}
@@ -133,14 +141,22 @@ end
 
 table.insert(building_names, "Tycoon")
 
+-- you can mess around w this idk
+func = hookfunction(path_utility.GetMovementTime, function(...)
+    if settings.fast_npcs then
+        return 0
+    end
+    return func(...)
+end)
+
 surface.DescendantAdded:Connect(function(v)
     task.wait(1)
-    if auto_dirty_dish and v.Name == "Trash" and v:GetAttribute("Taken") then
+    if settings.auto_dirty_dish and v.Name == "Trash" and v:GetAttribute("Taken") and v.Parent then
         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Tycoon = tycoon, Name = "CollectDishes", FurnitureModel = v.Parent.Parent })
         task.wait()
     end
 
-    if auto_bill and v.Name == "Bill" then
+    if settings.auto_bill and v.Name == "Bill" and v.Parent then
         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Tycoon = tycoon, Name = "CollectBill", FurnitureModel = v.Parent })
         task.wait()
     end
@@ -154,11 +170,11 @@ auto_group:AddDivider()
 
 auto_group:AddToggle('auto_order', {
     Text = 'Auto Take Customer Orders',
-    Default = auto_order,
+    Default = settings.auto_order,
     Tooltip = 'Collects dirty dish on tables',
 
     Callback = function(Value)
-        auto_order = Value
+        settings.auto_order = Value
         if Value then
             repeat
                 for _, v in next, local_player.PlayerGui:GetDescendants() do
@@ -169,19 +185,19 @@ auto_group:AddToggle('auto_order', {
                         task.wait()
                     end
                 end
-                task.wait(toggle_delay)
-            until not auto_order
+                task.wait(settings.toggle_delay)
+            until not settings.auto_order
         end
     end
 })
 
 auto_group:AddToggle('auto_dirty_dish', {
     Text = 'Auto Collect Dirty Dish',
-    Default = auto_dirty_dish,
+    Default = settings.auto_dirty_dish,
     Tooltip = 'Collects dirty dishes on tables',
 
     Callback = function(Value)
-        auto_dirty_dish = Value
+        settings.auto_dirty_dish = Value
         if Value then
             for _, v in next, surface:GetDescendants() do
                 if v.Name == "Trash" and v:GetAttribute("Taken") then
@@ -194,11 +210,11 @@ auto_group:AddToggle('auto_dirty_dish', {
 
 auto_group:AddToggle('auto_seat', {
     Text = 'Auto Seat Customers',
-    Default = auto_seat,
+    Default = settings.auto_seat,
     Tooltip = 'Automatically seats customers',
 
     Callback = function(Value)
-        auto_seat = Value
+        settings.auto_seat = Value
         if Value then
             repeat
                 for _, v in next, local_player.PlayerGui:GetDescendants() do
@@ -212,19 +228,19 @@ auto_group:AddToggle('auto_seat', {
                         end
                     end
                 end
-                task.wait(toggle_delay)
-            until not auto_seat
+                task.wait(settings.toggle_delay)
+            until not settings.auto_seat
         end
     end
 })
 
 auto_group:AddToggle('auto_bill', {
     Text = 'Auto Collect Bills',
-    Default = auto_bill,
+    Default = settings.auto_bill,
     Tooltip = 'Collects dirty dishes on tables',
 
     Callback = function(Value)
-        auto_bill = Value
+        settings.auto_bill = Value
         if Value then
             for _, v in next, surface:GetDescendants() do
                 if v.Name == "Bill" then
@@ -237,11 +253,11 @@ auto_group:AddToggle('auto_bill', {
 
 auto_group:AddToggle('auto_give_food', {
     Text = 'Auto Give Food',
-    Default = auto_give_food,
+    Default = settings.auto_give_food,
     Tooltip = 'Automatically brings food to customers',
 
     Callback = function(Value)
-        auto_give_food = Value
+        settings.auto_give_food = Value
         if Value then
             repeat
                 if #food:GetChildren() > 0 then
@@ -259,19 +275,19 @@ auto_group:AddToggle('auto_give_food', {
                         end
                     end
                 end
-                task.wait(toggle_delay)
-            until not auto_give_food
+                task.wait(settings.toggle_delay)
+            until not settings.auto_give_food
         end
     end
 })
 
 auto_group:AddToggle('auto_do_order', {
     Text = 'Auto Do Orders',
-    Default = auto_do_order,
+    Default = settings.auto_do_order,
     Tooltip = 'Takes orders from order booths',
 
     Callback = function(Value)
-        auto_do_order = Value
+        settings.auto_do_order = Value
         if Value then
             repeat
                 if #temp:GetChildren() > 0 then
@@ -282,19 +298,19 @@ auto_group:AddToggle('auto_do_order', {
                         end
                     end
                 end
-                task.wait(toggle_delay)
-            until not auto_do_order
+                task.wait(settings.toggle_delay)
+            until not settings.auto_do_order
         end
     end
 })
 
 auto_group:AddToggle('auto_cook', {
     Text = 'Auto Cook',
-    Default = auto_cook,
+    Default = settings.auto_cook,
     Tooltip = 'Automatically cooks food',
 
     Callback = function(Value)
-        auto_cook = Value
+        settings.auto_cook = Value
         if Value then
             local oven = nil
             for _, v in next, surface:GetDescendants() do
@@ -308,8 +324,24 @@ auto_group:AddToggle('auto_cook', {
                     replicated_storage:WaitForChild("Events"):WaitForChild("Cook"):WaitForChild("CookInputRequested"):FireServer("Interact", oven, "Oven")
                     task.wait()
                 end
-                task.wait(toggle_delay)
-            until not auto_cook
+                task.wait(settings.toggle_delay)
+            until not settings.auto_cook
+        end
+    end
+})
+
+auto_group:AddToggle('auto_tip', {
+    Text = 'Auto Tip',
+    Default = settings.auto_tip,
+    Tooltip = 'Automatically takes tips from jars',
+
+    Callback = function(Value)
+        settings.auto_tip = Value
+        if Value then
+            repeat
+                replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TipsCollected"):FireServer(tycoon)
+                task.wait(settings.toggle_delay)
+            until not settings.auto_tip
         end
     end
 })
@@ -318,14 +350,14 @@ auto_settings_group:AddDivider()
 
 auto_settings_group:AddSlider('toggle_delay', {
     Text = 'Toggle Repeat Delay',
-    Default = toggle_delay,
+    Default = settings.toggle_delay,
     Min = 0,
     Max = 5,
     Rounding = 1,
     Compact = false,
 
     Callback = function(Value)
-        toggle_delay = Value
+        settings.toggle_delay = Value
         if Value == 0 then
             library:Notify("0 Is Not Recommended As It May Cause Lag")
         end
@@ -336,26 +368,38 @@ food_group:AddDivider()
 
 food_group:AddDropdown('selected_food', {
     Values = ingredients,
-    Default = selected_food,
+    Default = settings.selected_food,
     Multi = false,
 
     Text = 'Select Ingredient To Buy:',
     Tooltip = 'Buys the Ingredient you picked when you press the button',
 
     Callback = function(Value)
-        selected_food = Value
+        settings.selected_food = Value
     end
 })
 
 food_group:AddButton({
     Text = 'Buy Ingredient',
     Func = function()
-        if selected_food ~= "" then
+        if settings.selected_food ~= "" then
             replicated_storage:WaitForChild("Events"):WaitForChild("Food"):WaitForChild("PurchaseIngredientRequested"):FireServer(tycoon, tostring(selected_food))
-            library:Notify("Bought "..selected_food)    
+            library:Notify("Bought "..settings.selected_food)    
         else
             library:Notify("Please select an ingredient")
         end
+    end
+})
+
+npc_group:AddDivider()
+
+npc_group:AddToggle('fast_npcs', {
+    Text = 'Fast Npcs',
+    Default = settings.fast_npcs,
+    Tooltip = 'Makes all npcs teleport instant [Breaks Chefs!]',
+
+    Callback = function(Value)
+        settings.fast_npcs = Value
     end
 })
 
@@ -363,14 +407,14 @@ teleport_group:AddDivider()
 
 teleport_group:AddDropdown('selected_place', {
     Values = building_names,
-    Default = selected_place,
+    Default = settings.selected_place,
     Multi = false,
 
     Text = 'Select Place To Teleport To:',
     Tooltip = 'Teleports to the place you picked when you press the butto',
 
     Callback = function(Value)
-        selected_place = Value
+        settings.selected_place = Value
     end
 })
 
@@ -382,14 +426,14 @@ teleport_group:AddButton({
             return
         end
 
-        if selected_place == "Tycoon" then
+        if settings.selected_place == "Tycoon" then
             local_player.Character:SetPrimaryPartCFrame(tycoon:FindFirstChild("Locations"):FindFirstChild("DefaultWalkPoint").Value)
-        elseif selected_place == "FishShop" then
+        elseif settings.selected_place == "FishShop" then
             local_player.Character:MoveTo(buildings[selected_place]:FindFirstChild("FishmongerNPC"):GetPivot().Position)
-        elseif not (selected_place == "Tycoon" or selected_place == "FishShop") then
-            replicated_storage:WaitForChild("Events"):WaitForChild("Teleports"):WaitForChild("RequestTeleport"):InvokeServer(selected_place.."Interior")
+        elseif not (settings.selected_place == "Tycoon" or settings.selected_place == "FishShop") then
+            replicated_storage:WaitForChild("Events"):WaitForChild("Teleports"):WaitForChild("RequestTeleport"):InvokeServer(settings.selected_place.."Interior")
         end
-        library:Notify("Teleported to "..selected_place)
+        library:Notify("Teleported to "..settings.selected_place)
     end,
     DoubleClick = false,
     Tooltip = 'Teleports you to selected place'
@@ -433,14 +477,15 @@ local watermark_connection = run_service.RenderStepped:Connect(function()
 end);
 
 menu_group:AddButton('Unload', function()
-    auto_dirty_dish = false
-    auto_give_food = false
-    auto_do_order = false
-    auto_order = false
-    auto_bill = false
-    auto_cook = false
-    auto_seat = false
-    auto_tip = false
+    settings.auto_dirty_dish = false
+    settings.auto_give_food = false
+    settings.auto_do_order = false
+    settings.auto_order = false
+    settings.fast_npcs = false
+    settings.auto_bill = false
+    settings.auto_cook = false
+    settings.auto_seat = false
+    settings.auto_tip = false
     watermark_connection:Disconnect()
     library:Unload()
 end)
