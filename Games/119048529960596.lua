@@ -162,7 +162,7 @@ auto_group:AddToggle('auto_order', {
         if Value then
             repeat
                 for _, v in next, local_player.PlayerGui:GetDescendants() do
-                    if v:IsA("ImageLabel") and v.Visible and v.Parent.Parent.Parent.Name == "CustomerSpeechUI" and v.Parent.Parent.Size == UDim2.new(1, 0, 1, 0) then
+                    if v:IsA("ImageLabel") and v.Parent.Parent.Parent.Name == "CustomerSpeechUI" and v.Parent.Parent.Size == UDim2.new(1, 0, 1, 0) then
                         local group = v.Parent.Parent.Parent.Adornee.Parent.Parent.Name
                         local customer = v.Parent.Parent.Parent.Adornee.Parent.Name
                         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ GroupId = tostring(group), Tycoon = tycoon, Name = "TakeOrder", CustomerId = tostring(customer) })
