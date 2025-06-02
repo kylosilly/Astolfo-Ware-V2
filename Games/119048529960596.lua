@@ -153,12 +153,10 @@ surface.DescendantAdded:Connect(function(v)
     task.wait(1)
     if settings.auto_dirty_dish and v.Name == "Trash" and v:GetAttribute("Taken") and v.Parent then
         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Tycoon = tycoon, Name = "CollectDishes", FurnitureModel = v.Parent.Parent })
-        task.wait()
     end
 
     if settings.auto_bill and v.Name == "Bill" and v.Parent then
         replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Tycoon = tycoon, Name = "CollectBill", FurnitureModel = v.Parent })
-        task.wait()
     end
 end)
 
