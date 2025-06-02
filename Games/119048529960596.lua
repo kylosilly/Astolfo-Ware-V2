@@ -429,8 +429,10 @@ teleport_group:AddButton({
         if settings.selected_place == "Tycoon" then
             local_player.Character:SetPrimaryPartCFrame(tycoon:FindFirstChild("Locations"):FindFirstChild("DefaultWalkPoint").Value)
         elseif settings.selected_place == "FishShop" then
-            local_player.Character:MoveTo(buildings[selected_place]:FindFirstChild("FishmongerNPC"):GetPivot().Position)
-        elseif not (settings.selected_place == "Tycoon" or settings.selected_place == "FishShop") then
+            local_player.Character:MoveTo(buildings[settings.selected_place]:FindFirstChild("FishmongerNPC"):GetPivot().Position)
+        elseif settings.selected_place == "FarmerMarket" then
+            local_player.Character:MoveTo(buildings[settings.selected_place]:FindFirstChild("FarmerNPC"):GetPivot().Position)
+        elseif not (settings.selected_place == "Tycoon" or settings.selected_place == "FishShop" or settings.selected_place == "FarmerMarket") then
             replicated_storage:WaitForChild("Events"):WaitForChild("Teleports"):WaitForChild("RequestTeleport"):InvokeServer(settings.selected_place.."Interior")
         end
         library:Notify("Teleported to "..settings.selected_place)
