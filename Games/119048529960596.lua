@@ -20,6 +20,9 @@ local window = library:CreateWindow({
 local tabs = {
     main = window:AddTab("Main"),
     misc = window:AddTab("Misc"),
+    --[[
+    npc = window:AddTab("Npc"),
+    ]]
     ["ui settings"] = window:AddTab("UI Settings")
 }
 
@@ -28,6 +31,9 @@ local auto_settings_group = tabs.main:AddRightGroupbox("Auto Settings")
 local food_group = tabs.main:AddRightGroupbox("Food Settings")
 local teleport_group = tabs.misc:AddLeftGroupbox("Teleport Settings")
 local player_group = tabs.misc:AddRightGroupbox("Player Settings")
+--[[
+local worker_group = tabs.npc:AddLeftGroupbox("Worker Settings")
+]]
 local menu_group = tabs["ui settings"]:AddLeftGroupbox("Menu Settings")
 
 local marketplace_service = game:GetService("MarketplaceService")
@@ -99,7 +105,7 @@ end
 local ingredient_module = require(replicated_storage:FindFirstChild("Source"):FindFirstChild("Data"):FindFirstChild("Food"):FindFirstChild("IngredientData"))
 
 if not ingredient_module then
-    local_player:Kick("Couldnt retrieve ingredients!")
+    local_player:Kick("Ingredient module not found!")
 end
 
 local auto_dirty_dish = false
@@ -249,7 +255,7 @@ auto_group:AddToggle('auto_give_food', {
                         if not v:GetAttribute("Taken") then
                             replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("GrabFood"):InvokeServer(v)
                             for _, v2 in next, local_player.PlayerGui:GetDescendants() do
-                                if v2:IsA("ImageLabel") and v2.Visible and v2.Parent.Parent.Parent.Name == "CustomerSpeechUI" and v2.Parent.Parent.Size == UDim2.new(1, 0, 1, 0) then
+                                if v2:IsA("ImageLabel") and v2.Parent.Parent.Parent.Name == "CustomerSpeechUI" and v2.Parent.Parent.Size == UDim2.new(1, 0, 1, 0) then
                                     local group = v2.Parent.Parent.Parent.Adornee.Parent.Parent.Name
                                     local customer = v2.Parent.Parent.Parent.Adornee.Parent.Name
                                     replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Name = "Serve", GroupId = tostring(group), Tycoon = tycoon, FoodModel = v, CustomerId = tostring(customer) })
@@ -268,7 +274,7 @@ auto_group:AddToggle('auto_give_food', {
 auto_group:AddToggle('auto_do_order', {
     Text = 'Auto Do Orders',
     Default = auto_do_order,
-    Tooltip = 'Does orders for customers',
+    Tooltip = 'Takes orders from order booths',
 
     Callback = function(Value)
         auto_do_order = Value
