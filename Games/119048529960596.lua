@@ -20,9 +20,6 @@ local window = library:CreateWindow({
 local tabs = {
     main = window:AddTab("Main"),
     misc = window:AddTab("Misc"),
-    --[[
-    npc = window:AddTab("Npc"),
-    ]]
     ["ui settings"] = window:AddTab("UI Settings")
 }
 
@@ -31,9 +28,6 @@ local auto_settings_group = tabs.main:AddRightGroupbox("Auto Settings")
 local food_group = tabs.main:AddRightGroupbox("Food Settings")
 local teleport_group = tabs.misc:AddLeftGroupbox("Teleport Settings")
 local player_group = tabs.misc:AddRightGroupbox("Player Settings")
---[[
-local worker_group = tabs.npc:AddLeftGroupbox("Worker Settings")
-]]
 local menu_group = tabs["ui settings"]:AddLeftGroupbox("Menu Settings")
 
 local marketplace_service = game:GetService("MarketplaceService")
