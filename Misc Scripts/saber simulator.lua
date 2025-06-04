@@ -26,6 +26,7 @@ if not egg_module then
     local_player:Kick("Egg module not found!")
 end
 
+local auto_pet_aura = false
 local auto_combine = false
 local auto_sabers = false
 local auto_boosts = false
@@ -184,6 +185,22 @@ shop_group:AddToggle('auto_boosts', {
                 replicated_storage:WaitForChild("Events"):WaitForChild("UIAction"):FireServer("BuyAllBossBoosts")
                 task.wait(.5)
             until not auto_boosts
+        end
+    end
+})
+
+shop_group:AddToggle('auto_pet_aura', {
+    Text = 'Auto Buy Pet Aura',
+    Default = auto_pet_aura,
+    Tooltip = 'Buys available pet auras',
+
+    Callback = function(Value)
+        auto_pet_aura = Value
+        if Value then
+            repeat
+                replicated_storage:WaitForChild("Events"):WaitForChild("UIAction"):FireServer("BuyAllPetAuras")
+                task.wait(.5)
+            until not auto_pet_aura
         end
     end
 })
@@ -400,6 +417,7 @@ local watermark_connection = run_service.RenderStepped:Connect(function()
 end);
 
 menu_group:AddButton('Unload', function()
+    auto_pet_aura = false
     auto_combine = false
     auto_sabers = false
     auto_boosts = false
