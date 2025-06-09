@@ -144,7 +144,7 @@ table.insert(building_names, "Tycoon")
 -- you can mess around w this idk
 func = hookfunction(path_utility.GetMovementTime, function(...)
     if settings.fast_npcs then
-        return 0
+        return 0.01
     end
     return func(...)
 end)
@@ -263,7 +263,7 @@ auto_group:AddToggle('auto_give_food', {
                         if not v:GetAttribute("Taken") then
                             replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("GrabFood"):InvokeServer(v)
                             for _, v2 in next, local_player.PlayerGui:GetDescendants() do
-                                if v2:IsA("ImageLabel") and v2.Parent.Parent.Parent.Name == "CustomerSpeechUI" and v2.Parent.Parent.Size == UDim2.new(1, 0, 1, 0) then
+                                if v2:IsA("ImageLabel") and v2.Parent and v2.Parent.Parent.Parent.Name == "CustomerSpeechUI" and v2.Parent.Parent.Size == UDim2.new(1, 0, 1, 0) then
                                     local group = v2.Parent.Parent.Parent.Adornee.Parent.Parent.Name
                                     local customer = v2.Parent.Parent.Parent.Adornee.Parent.Name
                                     replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ Name = "Serve", GroupId = tostring(group), Tycoon = tycoon, FoodModel = v, CustomerId = tostring(customer) })
