@@ -1,4 +1,4 @@
--- hi skid >.< i rushed ts in like 10 mins so ignore ass optimizations
+-- hi skid >.< sorry for ass optimizations cuz i rushed this in like 10 mins
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
@@ -133,7 +133,7 @@ dupe_group:AddSlider('dupe_amount', {
 
     Callback = function(Value)
         dupe_amount = Value
-        if Value > 250 then
+        if Value >= 251 then
             library:Notify("Anything above 250 can lag")
         end
     end
@@ -241,7 +241,7 @@ local watermark_connection = run_service.RenderStepped:Connect(function()
         FrameCounter = 0;
     end
 
-    library:SetWatermark(('made by @kylosilly on discord |%s fps | %s ms | game: '..info.Name..''):format(
+    library:SetWatermark(('%s fps | %s ms | game: '..info.Name..''):format(
         math.floor(FPS),
         math.floor(stats.Network.ServerStatsItem['Data Ping']:GetValue())
     ))
