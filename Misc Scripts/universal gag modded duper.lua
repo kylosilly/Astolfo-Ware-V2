@@ -127,7 +127,7 @@ dupe_group:AddSlider('dupe_amount', {
     Text = 'Dupe Amount:',
     Default = dupe_amount,
     Min = 1,
-    Max = 500,
+    Max = 1000,
     Rounding = 0,
     Compact = false,
 
