@@ -1,4 +1,4 @@
--- hi skid >.< sorry for ass optimizations cuz i rushed this in like 10 mins
+-- hi skid >.<
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
@@ -133,14 +133,15 @@ dupe_group:AddSlider('dupe_amount', {
 
     Callback = function(Value)
         dupe_amount = Value
-        if Value >= 251 then
+        if Value >= 251 and not ok then
+            ok = true
             library:Notify("Anything above 250 can lag")
         end
     end
 })
 
 dupe_group:AddButton({
-    Text = 'Dupe Plants',
+    Text = 'Dupe Closest Plants',
     Func = function()
         local plant = closest_plant()
         if plant then
@@ -152,7 +153,7 @@ dupe_group:AddButton({
         end
     end,
     DoubleClick = false,
-    Tooltip = 'Dupes plants on your plot with selected dupe amount'
+    Tooltip = 'Dupes closests plant on your plot with selected dupe amount'
 })
 
 shop_group:AddDivider()
