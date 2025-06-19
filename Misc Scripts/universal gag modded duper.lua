@@ -34,6 +34,14 @@ if gear_controller then
     can_get_free_gears = true
 end
 
+local can_dupe_eggs = false
+
+local egg_service = replicated_storage:FindFirstChild("GameEvents"):FindFirstChild("PetEggService")
+
+if egg_service then
+    can_dupe_eggs = true
+end
+
 local farms = workspace:FindFirstChild("Farm")
 local plot = nil
 
@@ -80,7 +88,7 @@ function closest_plant()
     local plant = nil
     local dist = 9e99
     for _, v in plant_physical:GetDescendants() do
-        if v:IsA("ProximityPrompt") and v.Parent then
+        if v:IsA("ProximityPrompt") and v.Parent and not v.Parent.Parent.Name:find("Egg") then
             local distance = (v.Parent.Parent:GetPivot().Position - local_player.Character:GetPivot().Position).Magnitude
             if distance < dist then
                 dist = distance
@@ -91,9 +99,25 @@ function closest_plant()
     return plant
 end
 
+function closest_egg()
+    local egg = nil
+    local dist = 9e99
+    for _, v in plant_physical:GetChildren() do
+        if v:IsA("Model") and v:GetAttribute("TimeToHatch") == 0 then
+            local distance = (v:GetPivot().Position - local_player.Character:GetPivot().Position).Magnitude
+            if distance < dist then
+                dist = distance
+                egg = v
+            end
+        end
+    end
+    return egg
+end
+
 local selected_seed = ""
 local selected_gear = ""
 
+local dupe_egg_amount = 100
 local dupe_amount = 250
 
 local repo = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
@@ -119,6 +143,7 @@ local dupe_group = tabs.main:AddLeftGroupbox("Dupe Settings")
 local shop_group = tabs.main:AddLeftGroupbox("Shop Settings")
 local plant_group = tabs.main:AddRightGroupbox("Seed Settings")
 local gear_group = tabs.main:AddRightGroupbox("Gear Settings")
+local egg_group = tabs.main:AddRightGroupbox("Egg Settings")
 local menu_group = tabs["ui settings"]:AddLeftGroupbox("Menu Settings")
 
 dupe_group:AddDivider()
@@ -228,6 +253,51 @@ if can_get_free_gears then
     })
 else
     gear_group:AddLabel("Free buy gear remote not found so you cant use this feature!", true)
+end
+
+egg_group:AddDivider()
+
+if can_dupe_eggs then
+    egg_group:AddLabel("Hatches same egg multiple times must be hatchable", true)
+    egg_group:AddDivider()
+    egg_group:AddSlider('dupe_amount', {
+        Text = 'Dupe Egg Amount:',
+        Default = dupe_egg_amount,
+        Min = 1,
+        Max = 1000,
+        Rounding = 0,
+        Compact = false,
+
+        Callback = function(Value)
+            dupe_egg_amount = Value
+            if Value >= 101 and not ok2 then
+                ok2 = true
+                library:Notify("Anything above 100 can lag ALOT")
+            end
+        end
+    })
+
+    egg_group:AddButton({
+        Text = 'Dupe Closest Eggs',
+        Func = function()
+            local egg = closest_egg()
+            if egg then
+                local_player.Character:MoveTo(egg:GetPivot().Position)
+                task.wait(1)
+                fireproximityprompt(egg:FindFirstChildOfClass("Model"):FindFirstChildOfClass("ProximityPrompt"))
+                task.wait(1)
+                for i = 1, dupe_egg_amount do
+                    egg_service:FireServer("HatchPet", egg)
+                end
+            else
+                library:Notify("No egg found")
+            end
+        end,
+        DoubleClick = false,
+        Tooltip = 'Dupes closest egg on your plot with selected dupe amount'
+    })
+else
+    egg_group:AddLabel("Cant dupe egg hatches in this game!", true)
 end
 
 local FrameTimer = tick()
