@@ -1,4 +1,4 @@
--- hi skid >.<
+-- hi skids <3
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
@@ -127,7 +127,7 @@ local theme_manager = loadstring(game:HttpGet(repo .. 'Gui%20Lib%20%5BThemeManag
 local save_manager = loadstring(game:HttpGet(repo .. 'Gui%20Lib%20%5BSaveManager%5D'))()
 
 local window = library:CreateWindow({
-    Title = "Holy Skidded Games 🥀 | Made By @kylosilly On Discord",
+    Title = "Holy Skidded Games | Made By @kylosilly On Discord",
     Center = true,
     AutoShow = true,
     TabPadding = 8,
